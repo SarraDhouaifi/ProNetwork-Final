@@ -1,49 +1,43 @@
 <div class="applied-jobs-container">
     <h2 style="font-size: 1.2rem; margin-bottom: 20px; color: #1f2937;">
         <i class="fa-solid fa-paper-plane" style="color: #0a66c2; margin-right: 10px;"></i>
-        My Sent Applications
+        Mes candidatures envoyées
     </h2>
 
     <% if (applications && applications.length > 0) { %>
         <div class="applications-grid" style="display: grid; gap: 15px;">
             <% applications.forEach(app => { %>
                 <% 
-                    // Define colors based on status
+                    // Définition des couleurs selon le statut
                     let statusStyles = {
                         bg: '#eef3f8', color: '#0a66c2', border: '#0a66c2'
                     };
-                    // Changed 'Acceptée' to 'Accepted' and 'Refusée' to 'Rejected'
-                    if (app.status === 'Accepted') {
+                    if (app.status === 'Acceptée') {
                         statusStyles = { bg: '#e6f4ea', color: '#057642', border: '#057642' };
-                    } else if (app.status === 'Rejected') {
+                    } else if (app.status === 'Refusée') {
                         statusStyles = { bg: '#fce8e6', color: '#cc1016', border: '#cc1016' };
                     }
                 %>
                 <div class="card application-item" style="padding: 15px; display: flex; align-items: center; justify-content: space-between; border-left: 5px solid <%= statusStyles.border %>; background: white; border-radius: 8px; border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
                     <div style="display: flex; align-items: center; gap: 15px;">
-                        <div class="avatar-sm" style="width: 48px; height: 48px;">
-                            <img src="<%= app.job.company.profilePicture || '/images/default-company.png' %>" 
-                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;">
-                        </div>
-                        
                         <div>
                             <h4 style="margin: 0; font-size: 1rem;"><%= app.job.title %></h4>
                             <p style="margin: 2px 0; color: #0a66c2; font-weight: 500;"><%= app.job.company.companyName %></p>
                             <span style="font-size: 12px; color: #6b7280;">
-                                Applied on <%= new Date(app.createdAt).toLocaleDateString('en-US') %>
+                                Postulé le <%= new Date(app.createdAt).toLocaleDateString('fr-FR') %>
                             </span>
                         </div>
                     </div>
 
                     <div style="text-align: right;">
                         <span class="status-badge" style="background: <%= statusStyles.bg %>; color: <%= statusStyles.color %>; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block;">
-                            <i class="fa-solid <%= app.status === 'Accepted' ? 'fa-check-circle' : (app.status === 'Rejected' ? 'fa-times-circle' : 'fa-clock') %>"></i>
-                            <%= app.status || 'Pending' %>
+                            <i class="fa-solid <%= app.status === 'Acceptée' ? 'fa-check-circle' : (app.status === 'Refusée' ? 'fa-times-circle' : 'fa-clock') %>"></i>
+                            <%= app.status || 'En attente' %>
                         </span>
                         
                         <div style="margin-top: 10px;">
                             <a href="/messages" style="font-size: 13px; color: #666; text-decoration: none; font-weight: 500;">
-                                <i class="fa-regular fa-comments"></i> Chat
+                                <i class="fa-regular fa-comments"></i> Discussion
                             </a>
                         </div>
                     </div>
@@ -52,8 +46,8 @@
         </div>
     <% } else { %>
         <div class="card" style="padding: 40px; text-align: center; color: #6b7280; background: white; border-radius: 8px; border: 1px solid #eee;">
-            <p>You haven't applied to any jobs yet.</p>
-            <a href="/jobs#explore-jobs" class="btn-primary" style="display: inline-block; margin-top: 10px; text-decoration: none; background: #0a66c2; color: white; padding: 8px 16px; border-radius: 20px;">Discover Jobs</a>
+            <p>Vous n'avez pas encore postulé à des offres.</p>
+            <a href="/jobs#explore-jobs" class="btn-primary" style="display: inline-block; margin-top: 10px; text-decoration: none; background: #0a66c2; color: white; padding: 8px 16px; border-radius: 20px;">Découvrir les jobs</a>
         </div>
     <% } %>
 </div>
