@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Help Center | ProNetwork</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .help-container { max-width: 800px; margin: 40px auto; padding: 0 20px; text-align: center; }
+        .help-card { background: white; border-radius: 12px; padding: 40px; border: 1px solid #dbdbdb; }
+        .help-icon { font-size: 50px; color: #0a66c2; margin-bottom: 20px; }
+        .faq-item { text-align: left; margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        .faq-question { font-weight: 700; font-size: 16px; margin-bottom: 8px; color: #333; }
+        .faq-answer { color: #666; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <%- include('./partials/navbar', { user: user }) %>
+
+    <div class="help-container">
+        <div class="help-card">
+            <i class="fa-solid fa-life-ring help-icon"></i>
+            <h1 style="margin-bottom: 10px;">How can we help?</h1>
+            <p style="color: #666;">Browse our frequently asked questions or contact support.</p>
+
+            <div style="margin-top: 40px;">
+                <div class="faq-item">
+                    <div class="faq-question">How do I connect with people?</div>
+                    <div class="faq-answer">Visit a user's profile and click the "Connect" button. Once they accept, you will be able to message them.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">How do I change my password?</div>
+                    <div class="faq-answer">Go to <a href="/settings" style="color: #0a66c2;">Settings</a> > Account Preferences to update your password securely.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Is ProNetwork free?</div>
+                    <div class="faq-answer">Yes, ProNetwork is currently free for all users to connect and find jobs.</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 40px;">
+                <p style="font-weight: 600;">Still need help?</p>
+                <a href="mailto:support@pronetwork.com" class="btn-pill btn-outline" style="display: inline-block; margin-top: 10px; text-decoration: none;">Contact Support</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/notifications.js"></script>
+</body>
+</html>

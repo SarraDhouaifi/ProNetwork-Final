@@ -1,0 +1,12 @@
+{
+  "nav": {
+    "settings": "Paramètres & confidentialité",
+    "help": "Aide",
+    "language": "Langue",
+    "logout": "Déconnexion"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": "Préférences linguistiques"
+  }
+}

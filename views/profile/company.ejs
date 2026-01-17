@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= company.firstName %> | Company Profile</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <%- include('../partials/navbar', { user: user }) %> 
+
+    <div class="profile-container" style="max-width: 1100px; margin: 20px auto; display: grid; grid-template-columns: 3fr 1fr; gap: 20px;">
+        
+        <main>
+            <!-- Cover + Profile -->
+            <div class="card" style="padding: 0; overflow: hidden; position: relative; margin-bottom: 20px;">
+                <div style="height: 200px; background: linear-gradient(90deg, #1e293b 0%, #334155 100%);">
+                    <% if(company.coverPhoto) { %>
+                        <img src="<%= company.coverPhoto %>" style="width: 100%; height: 100%; object-fit: cover;">
+                    <% } %>
+                </div>
+                <div style="padding: 20px; padding-top: 0; position: relative;">
+                    <div style="width: 130px; height: 130px; background: white; border: 4px solid white; border-radius: 12px; position: absolute; top: -80px; left: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <% if(company.profilePicture) { %>
+                            <img src="<%= company.profilePicture %>" style="width: 100%; height: 100%; object-fit: contain;">
+                        <% } else { %>
+                            <i class="fa-solid fa-building" style="font-size: 50px; color: #cbd5e1;"></i>
+                        <% } %>
+                    </div>
+                    <div style="margin-left: 150px; min-height: 60px;">
+                        <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 5px;"><%= company.firstName %></h1>
+                        <p style="color: #64748b; font-size: 16px;"><%= company.headline || 'Company Industry' %></p>
+                        <p style="color: #64748b; font-size: 14px; margin-top: 5px;">
+                            <i class="fa-solid fa-location-dot"></i> <%= company.location || 'Headquarters not set' %> &bull; 
+                            <span style="color: #2563eb; font-weight: 600;"><%= company.connections ? company.connections.length : 0 %> followers</span>
+                        </p>
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <% if (isOwner) { %>
+                            <a href="/profile/edit" class="btn-pill btn-outline"><i class="fa-solid fa-pen"></i> Edit Page</a>
+                            <a href="/jobs/create" class="btn-pill btn-fill"><i class="fa-solid fa-plus"></i> Post a Job</a>
+                        <% } else { %>
+                            <% if (connectionStatus === 'connected') { %>
+                                <button class="btn-pill btn-outline" style="border-color: #16a34a; color: #16a34a;"><i class="fa-solid fa-check"></i> Following</button>
+                            <% } else { %>
+                                <a href="/connect/<%= company._id %>" class="btn-pill btn-fill">Follow</a>
+                            <% } %>
+                            <% if (company.contactInfo && company.contactInfo.website) { %>
+                                <a href="<%= company.contactInfo.website %>" target="_blank" class="btn-pill btn-outline">Visit Website <i class="fa-solid fa-external-link-alt"></i></a>
+                            <% } %>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Us -->
+            <div class="card" style="margin-bottom: 20px; padding: 20px;">
+                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 15px;">About Us</h3>
+                <p style="white-space: pre-line; color: #334155; line-height: 1.6;">
+                    <%= company.about || 'No description added yet.' %>
+                </p>
+            </div>
+
+            <!-- Open Positions -->
+            <div class="card" style="margin-bottom: 20px; padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="font-size: 18px; font-weight: 600;">Open Positions</h3>
+                    <% if (typeof jobs !== 'undefined' && jobs.length > 0) { %>
+                        <span style="background: #eff6ff; color: #2563eb; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: bold;"><%= jobs.length %></span>
+                    <% } %>
+                </div>
+
+                <% if (typeof jobs !== 'undefined' && jobs.length > 0) { %>
+                    <% for (var i = 0; i < jobs.length; i++) { 
+                        var job = jobs[i]; %>
+                        <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h4 style="font-weight: 600; font-size: 16px; margin-bottom: 5px;">
+                                    <a href="/jobs/<%= job._id %>" style="color: #0f172a; text-decoration: none;"><%= job.title %></a>
+                                </h4>
+                                <p style="font-size: 14px; color: #64748b;"><%= job.location %> (<%= job.type %>)</p>
+                                <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">Posted <%= new Date(job.createdAt).toLocaleDateString() %></p>
+                            </div>
+                            <a href="/jobs/<%= job._id %>" class="btn-pill btn-outline" style="padding: 5px 15px; font-size: 13px;">Edit Offer</a>
+                        </div>
+                    <% } %>
+                <% } else { %>
+                    <p style="font-style: italic; color: #94a3b8;">No active job openings at the moment.</p>
+                <% } %>
+            </div>
+
+            <!-- Updates -->
+            <div class="card" style="padding: 20px;">
+                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 15px;">Updates</h3>
+                <% if (typeof posts !== 'undefined' && posts.length > 0) { %>
+                    <% for (var i = 0; i < posts.length; i++) { 
+                        var post = posts[i]; %>
+                        <div style="border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px;">
+                            <div style="font-size: 12px; color: #64748b; margin-bottom: 5px;"><%= new Date(post.createdAt).toLocaleDateString() %></div>
+                            <p style="margin-bottom: 10px;"><%= post.text %></p>
+                            <% if(post.image) { %>
+                                <img src="<%= post.image %>" style="max-width: 100%; border-radius: 8px;">
+                            <% } %>
+                        </div>
+                    <% } %>
+                <% } else { %>
+                    <p style="color: #64748b;">No recent updates.</p>
+                <% } %>
+            </div>
+
+        </main>
+
+        <aside>
+            <!-- Company Details -->
+            <div class="card" style="padding: 20px; margin-bottom: 20px;">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">Company Details</h3>
+                
+                <% if(company.contactInfo && company.contactInfo.website) { %>
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-size: 12px; color: #64748b; font-weight: 600;">Website</div>
+                        <a href="<%= company.contactInfo.website %>" target="_blank" style="color: #2563eb; font-size: 14px; text-decoration: none; word-break: break-all;">
+                            <%= company.contactInfo.website %>
+                        </a>
+                    </div>
+                <% } %>
+
+                <% if(company.contactInfo && company.contactInfo.phone) { %>
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-size: 12px; color: #64748b; font-weight: 600;">Phone</div>
+                        <div style="font-size: 14px;"><%= company.contactInfo.phone %></div>
+                    </div>
+                <% } %>
+
+                <div style="margin-bottom: 10px;">
+                    <div style="font-size: 12px; color: #64748b; font-weight: 600;">Industry</div>
+                    <div style="font-size: 14px;"><%= company.headline || 'Not specified' %></div>
+                </div>
+            </div>
+
+            <!-- CEO / Key People -->
+            <% if(company.ceo) { %>
+                <div class="card" style="padding: 20px; margin-bottom: 20px;">
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">Key People</h3>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <a href="/user/<%= company.ceo._id %>">
+                            <img src="<%= company.ceo.profilePicture || '/images/default-user.png' %>" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                        </a>
+                        <div>
+                            <div style="font-weight: 600; font-size: 14px;">
+                                <a href="/user/<%= company.ceo._id %>" style="color: #0f172a; text-decoration: none;">
+                                    <%= company.ceo.firstName %> <%= company.ceo.lastName %>
+                                </a>
+                            </div>
+                            <div style="font-size: 12px; color: #64748b;"><%= company.ceo.headline || 'CEO / Founder' %></div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+
+        </aside>
+
+    </div>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>

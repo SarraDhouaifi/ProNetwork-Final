@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applicants Management | ProNetwork</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0a66c2;
+            --primary-hover: #004182;
+            --bg-gray: #f3f2ef;
+            --text-main: #1f2937;
+            --text-muted: #667085;
+            --border: #e0e0e0;
+            --success: #057642;
+            --danger: #cc1016;
+        }
+
+        body { background-color: var(--bg-gray); font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .app-container { max-width: 950px; margin: 30px auto; padding: 0 20px; }
+
+        .job-header-card {
+            background: white; border-radius: 10px; padding: 24px;
+            border: 1px solid var(--border); margin-bottom: 24px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .applicant-card {
+            background: white; border-radius: 10px; padding: 20px;
+            margin-bottom: 12px; border: 1px solid var(--border);
+            display: grid; grid-template-columns: auto 1fr auto;
+            align-items: center; gap: 20px;
+        }
+
+        /* Avatar cliquable */
+        .avatar-circle {
+            width: 72px; height: 72px; border-radius: 50%;
+            overflow: hidden; background: #f3f4f6;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; font-weight: 600; color: #4F46E5;
+            text-decoration: none;
+        }
+        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+        .status-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 12px;
+            font-size: 12px; font-weight: 700; text-transform: uppercase; margin-top: 8px;
+        }
+        .status-pending { background: #f3f4f6; color: #374151; }
+        .status-accepted { background: #e6f4ea; color: var(--success); }
+        .status-rejected { background: #fce8e6; color: var(--danger); }
+
+        .btn-action {
+            padding: 8px 16px; border-radius: 20px; border: none;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 6px; transition: 0.2s;
+        }
+        .btn-accept { background: var(--success); color: white; }
+        .btn-reject { background: white; color: var(--danger); border: 1px solid var(--danger); }
+
+        .actions-group { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+        .decision-made { font-size: 13px; color: var(--text-muted); font-style: italic; }
+        
+        .btn-profile-link {
+            text-decoration: none; 
+            font-size: 14px; 
+            font-weight: 600;
+            color: var(--primary);
+            transition: 0.2s;
+        }
+        .btn-profile-link:hover { text-decoration: underline; color: var(--primary-hover); }
+    </style>
+</head>
+<body>
+
+    <%- include('../partials/navbar') %>
+
+    <div class="app-container">
+        <header class="job-header-card">
+            <div class="job-title-area">
+                <p style="margin:0; color: var(--text-muted);">Applications for</p>
+                <h2 style="margin:0; font-size: 22px;"><%= job.title %></h2>
+            </div>
+            <div style="text-align: right;">
+                <span style="background: #eef3f8; color: var(--primary); padding: 6px 14px; border-radius: 6px; font-weight: 600;">
+                    <i class="fa-solid fa-user-group"></i> <%= job.applicants.length %> Candidates
+                </span>
+            </div>
+        </header>
+
+        <% if (job.applicants && job.applicants.length > 0) { %>
+            <div class="list-wrapper">
+                <% job.applicants.forEach(applicant => { %>
+                    <div class="applicant-card">
+                        
+                        <a href="/user/<%= applicant._id %>" class="avatar-circle">
+                            <% if(applicant.profilePicture) { %>
+                                <img src="<%= applicant.profilePicture %>" alt="Profile">
+                            <% } else { %>
+                                <%= (applicant.firstName || "").charAt(0) %><%= (applicant.lastName || "").charAt(0) %>
+                            <% } %>
+                        </a>
+
+                        <div class="info-main">
+                            <a href="/user/<%= applicant._id %>" style="text-decoration: none; color: inherit;">
+                                <h4 style="margin: 0; font-size: 18px;"><%= applicant.firstName %> <%= applicant.lastName %></h4>
+                            </a>
+                            <p class="headline" style="margin: 4px 0; color: var(--text-muted);"><%= applicant.headline || 'Professional Candidate' %></p>
+                            
+                            <% 
+                                let statusClass = 'status-pending';
+                                let statusLabel = 'En attente';
+                                if(applicant.status === 'Acceptée') { statusClass = 'status-accepted'; statusLabel = 'Acceptée'; }
+                                if(applicant.status === 'Refusée') { statusClass = 'status-rejected'; statusLabel = 'Refusée'; }
+                            %>
+                            <span class="status-badge <%= statusClass %>">
+                                <%= statusLabel %>
+                            </span>
+                        </div>
+
+                        <div class="actions-group">
+                            <a href="/user/<%= applicant._id %>" class="btn-profile-link">
+                                <i class="fa-solid fa-circle-user"></i> View Profile
+                            </a>
+
+                            <% if (!applicant.status || applicant.status === 'En attente') { %>
+                                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                    <form action="/jobs/applications/<%= applicant.applicationId %>/status" method="POST">
+                                        <input type="hidden" name="status" value="Acceptée">
+                                        <button type="submit" class="btn-action btn-accept">
+                                            <i class="fa-solid fa-check"></i> Accept
+                                        </button>
+                                    </form>
+
+                                    <form action="/jobs/applications/<%= applicant.applicationId %>/status" method="POST">
+                                        <input type="hidden" name="status" value="Refusée">
+                                        <button type="submit" class="btn-action btn-reject">
+                                            <i class="fa-solid fa-xmark"></i> Reject
+                                        </button>
+                                    </form>
+                                </div>
+                            <% } else { %>
+                                <span class="decision-made">Decision finalized</span>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <div style="text-align: center; padding: 40px; background: white; border-radius: 10px;">
+                <p style="color: var(--text-muted);">No applications received yet for this position.</p>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>

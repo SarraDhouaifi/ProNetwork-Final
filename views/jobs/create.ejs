@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Post a Job | ProNetwork</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .form-container { max-width: 600px; margin: 50px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .btn-submit { width: 100%; padding: 12px; background: #0a66c2; color: white; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <%- include('../partials/navbar') %> <div class="form-container">
+        <h2 style="margin-bottom: 20px;">Create a Job Offer</h2>
+        
+        <form action="/jobs/create" method="POST">
+            <div class="form-group">
+                <label>Job Title</label>
+                <input type="text" name="title" placeholder="e.g. Senior Software Engineer" required>
+            </div>
+
+            <div class="form-group">
+                <label>Location</label>
+                <input type="text" name="location" placeholder="e.g. Paris, France (or Remote)" required>
+            </div>
+
+            <div class="form-group">
+                <label>Employment Type</label>
+                <select name="type">
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Internship">Internship</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" rows="5" placeholder="Describe the role and requirements..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">Post Job</button>
+            <a href="/feed" style="display:block; text-align:center; margin-top:15px; color:#666; text-decoration:none;">Cancel</a>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche : <%= searchQuery %> | ProNetwork</title>
+    
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Design du conteneur principal */
+        .search-main-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* Onglets de navigation de recherche */
+        .search-tabs {
+            background: white; padding: 10px 15px; border-radius: 10px;
+            margin-bottom: 20px; display: flex; gap: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e0e0e0;
+        }
+        .search-tab {
+            text-decoration: none; color: #666; font-weight: 600;
+            padding: 8px 0; border-bottom: 3px solid transparent;
+            font-size: 14px; transition: 0.3s;
+        }
+        .search-tab:hover { color: #0a66c2; }
+        .search-tab.active { color: #0a66c2; border-bottom: 3px solid #0a66c2; }
+
+        /* Cartes de résultats (Gens / Entreprises) */
+        .result-card {
+            display: flex; align-items: center; background: white;
+            padding: 15px; border-radius: 10px; border: 1px solid #e0e0e0;
+            margin-bottom: 12px; gap: 15px; transition: 0.2s;
+        }
+        .result-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        
+        .result-avatar {
+            width: 70px; height: 70px; border-radius: 50%;
+            object-fit: cover; background: #f3f2ef;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: #0a66c2; font-weight: bold; flex-shrink: 0;
+        }
+
+        /* Jobs spécifique */
+        .job-icon {
+            width: 52px; height: 52px; background: #f3f2ef;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; color: #682664; font-size: 24px;
+        }
+
+        /* Boutons */
+        .btn-action {
+            background-color: transparent; border: 1px solid #0a66c2;
+            color: #0a66c2 !important; padding: 6px 18px; border-radius: 20px;
+            font-weight: 600; text-decoration: none; font-size: 14px; transition: 0.2s;
+        }
+        .btn-action:hover { background-color: #f0f7ff; border-width: 2px; }
+        
+        .btn-primary-search {
+            background-color: #0a66c2; color: white !important;
+            padding: 8px 20px; border-radius: 20px; font-weight: 600; text-decoration: none;
+        }
+
+        @media (max-width: 992px) {
+            .search-main-layout { grid-template-columns: 1fr; }
+            .left-sidebar, .right-sidebar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('partials/navbar', { user: user }) %>
+
+    <div class="search-main-layout">
+        
+        <aside class="left-sidebar">
+            <div class="card" style="padding: 15px; background: white; border-radius: 10px; border: 1px solid #e0e0e0;">
+                <h4 style="color: #333;">Filtres de recherche</h4>
+                <p style="font-size: 13px; color: #666; margin-top:8px;">
+                    Résultats pour : <br><strong>"<%= searchQuery %>"</strong>
+                </p>
+                <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+                <p style="font-size: 12px; font-weight: 600;"><%= results.length %> résultat(s) trouvé(s)</p>
+            </div>
+        </aside>
+
+        <main class="search-feed">
+
+            <div class="search-tabs">
+                <a href="/search?q=<%= searchQuery %>&type=people" class="search-tab <%= type === 'people' ? 'active' : '' %>">Gens</a>
+                <a href="/search?q=<%= searchQuery %>&type=jobs" class="search-tab <%= type === 'jobs' ? 'active' : '' %>">Emplois</a>
+                <a href="/search?q=<%= searchQuery %>&type=posts" class="search-tab <%= type === 'posts' ? 'active' : '' %>">Posts</a>
+                <a href="/search?q=<%= searchQuery %>&type=companies" class="search-tab <%= type === 'companies' ? 'active' : '' %>">Entreprises</a>
+            </div>
+
+            <% if (results.length === 0) { %>
+                <div class="card" style="padding: 50px; text-align: center; background: white; border-radius: 10px;">
+                    <i class="fa-solid fa-user-slash" style="font-size: 40px; color: #ccc; margin-bottom: 15px;"></i>
+                    <p style="color: #666;">Aucun résultat pour "<%= searchQuery %>" dans cette catégorie.</p>
+                    <a href="/feed" style="color: #0a66c2; font-size: 14px; text-decoration: none;">Retour au flux</a>
+                </div>
+            <% } %>
+
+            <% if (type === 'people' || type === 'companies') { %>
+                <% results.forEach(item => { %>
+                    <div class="result-card">
+                        <a href="/user/<%= item._id %>">
+                            <% if(item.profilePicture) { %>
+                                <img src="<%= item.profilePicture %>" class="result-avatar">
+                            <% } else { %>
+                                <div class="result-avatar">
+                                    <%= item.firstName ? item.firstName.charAt(0) : (item.companyName ? item.companyName.charAt(0) : 'P') %>
+                                </div>
+                            <% } %>
+                        </a>
+
+                        <div style="flex: 1;">
+                            <a href="/user/<%= item._id %>" style="font-weight: bold; font-size: 17px; color: #333; text-decoration: none;">
+                                <%= item.firstName ? (item.firstName + ' ' + item.lastName) : item.companyName %>
+                            </a>
+                            <p style="font-size: 14px; color: #666; margin: 3px 0;">
+                                <%= item.headline || (item.role === 'company' ? 'Entreprise' : 'Membre ProNetwork') %>
+                            </p>
+                            <p style="font-size: 12px; color: #888;">
+                                <i class="fa-solid fa-location-dot"></i> <%= item.location || 'Localisation non renseignée' %>
+                            </p>
+                        </div>
+
+                        <div class="result-action">
+                            <% if(user && item._id.toString() === user._id.toString()) { %>
+                                <span style="color: #888; font-size: 13px; font-style: italic;">Vous</span>
+                            <% } else { %>
+                                <a href="/user/<%= item._id %>" class="btn-action">Voir le profil</a>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }) %>
+
+            <% } else if (type === 'jobs') { %>
+                <% results.forEach(job => { %>
+                    <div class="result-card">
+                        <div class="job-icon">
+                            <i class="fa-solid fa-briefcase"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0; font-size: 16px;"><a href="/jobs/<%= job._id %>" style="color: #0a66c2; text-decoration: none;"><%= job.title %></a></h4>
+                            <p style="margin: 2px 0; font-weight: 600; color: #333; font-size: 14px;">
+                                <%= job.company ? (job.company.companyName || job.company.firstName) : "Entreprise" %>
+                            </p>
+                            <p style="margin: 0; font-size: 13px; color: #666;">
+                                <%= job.location %> • <span style="color: #057642;"><%= job.type %></span>
+                            </p>
+                        </div>
+                        <a href="/jobs/<%= job._id %>" class="btn-primary-search">Postuler</a>
+                    </div>
+                <% }) %>
+
+            <% } else if (type === 'posts') { %>
+                <% results.forEach(post => { %>
+                    <div class="card" style="margin-bottom: 15px; background: white; border-radius: 10px; border: 1px solid #e0e0e0; padding: 15px;">
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                            <img src="<%= post.author.profilePicture || '/assets/images/default.png' %>" style="width:40px; height:40px; border-radius:50%; object-fit: cover;">
+                            <div>
+                                <h4 style="margin:0; font-size: 14px;"><%= post.author.firstName %> <%= post.author.lastName %></h4>
+                                <p style="margin:0; font-size: 12px; color: #666;"><%= post.author.headline %></p>
+                            </div>
+                        </div>
+                        <p style="font-size: 14px; line-height: 1.5;"><%= post.text %></p>
+                    </div>
+                <% }) %>
+            <% } %>
+
+        </main>
+
+        <aside class="right-sidebar">
+            <div class="card" style="padding: 15px; background: white; border-radius: 10px; border: 1px solid #e0e0e0;">
+                <h3 style="font-size: 15px; margin-bottom: 10px;">Affiner ma recherche</h3>
+                <p style="font-size: 13px; color: #666; line-height: 1.4;">
+                    Vous ne trouvez pas ce que vous cherchez ? Essayez d'ajouter un lieu ou un titre de poste spécifique dans la barre de recherche.
+                </p>
+            </div>
+        </aside>
+
+    </div>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>

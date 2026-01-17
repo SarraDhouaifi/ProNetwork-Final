@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNetwork - Login</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="split-screen">
+    <div class="left-panel"></div>
+
+    <div class="right-panel">
+        <div class="auth-card">
+            <div class="brand-header">
+                <h1>ProNetwork</h1>
+                <p>Connect with professionals worldwide</p>
+            </div>
+
+            <div class="auth-tabs">
+                <a href="/login" class="active">Sign In</a>
+                <a href="/register">Create Account</a>
+            </div>
+
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div id="error-alert" style="background-color: #FEE2E2; border: 1px solid #EF4444; color: #B91C1C; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 14px;">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span><%= error %></span>
+                </div>
+            <% } %>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" name="email" placeholder="you@example.com" required oninput="this.value = this.value.trim()">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock" style="left: 14px;"></i>
+                        <input type="password" name="password" id="password" placeholder="••••••••" required>
+                        <i class="fa-regular fa-eye password-toggle" id="togglePassword"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Sign In</button>
+                
+                <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
+            </form>
+
+            <div id="message" style="text-align: center; margin-top: 10px;"></div>
+
+            <div class="divider">
+                <span>Or continue with</span>
+            </div>
+
+            <div class="social-buttons">
+                <a href="/auth/google" class="btn-social" style="text-decoration: none;">
+                    <i class="fa-brands fa-google" style="color: #DB4437;"></i> Google
+                </a>
+                
+                <a href="#" class="btn-social" style="text-decoration: none;">
+                    <i class="fa-brands fa-apple"></i> Apple
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/login.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "nav": {
+    "settings": "Settings & Privacy",
+    "help": "Help",
+    "language": "Language",
+    "logout": "Sign Out"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language Preferences"
+  }
+}

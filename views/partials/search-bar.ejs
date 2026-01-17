@@ -1,0 +1,22 @@
+<form action="/search" method="GET" class="search-box" style="display: flex; align-items: center; padding: 5px 15px; gap: 8px; background: #eef3f8; border-radius: 4px; width: 350px;">
+    
+    <i class="fa-solid fa-magnifying-glass" style="color: #666; font-size: 14px;"></i>
+
+    <select name="type" style="border: none; background: transparent; font-size: 13px; font-weight: 600; color: #444; outline: none; cursor: pointer; padding-right: 5px;">
+        <option value="people" <%= (typeof currentSearchType !== 'undefined' && currentSearchType === 'people') ? 'selected' : '' %>>People</option>
+        <option value="jobs" <%= (typeof currentSearchType !== 'undefined' && currentSearchType === 'jobs') ? 'selected' : '' %>>Jobs</option>
+        <option value="posts" <%= (typeof currentSearchType !== 'undefined' && currentSearchType === 'posts') ? 'selected' : '' %>>Posts</option>
+        <option value="companies" <%= (typeof currentSearchType !== 'undefined' && currentSearchType === 'companies') ? 'selected' : '' %>>Companies</option>
+    </select>
+
+    <div style="width: 1px; height: 18px; background-color: #ccc; margin: 0 4px;"></div>
+
+    <input type="text" 
+           name="q" 
+           value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>" 
+           placeholder="Search..." 
+           autocomplete="off" 
+           style="border: none; background: transparent; outline: none; font-size: 14px; width: 100%; color: #333;">
+    
+    <button type="submit" style="display: none;"></button>
+</form>

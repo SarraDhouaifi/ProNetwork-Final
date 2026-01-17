@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNetwork - Select Role</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Un peu de CSS inline juste pour les boutons de choix */
+        .role-selection { display: flex; gap: 20px; margin-top: 30px; justify-content: center; }
+        .role-card {
+            flex: 1; border: 2px solid #e0e0e0; border-radius: 10px; padding: 20px;
+            text-align: center; text-decoration: none; color: #333; transition: 0.3s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .role-card:hover { border-color: #0073b1; background: #f4f9ff; transform: translateY(-3px); }
+        .role-card i { font-size: 2.5rem; color: #0073b1; margin-bottom: 10px; }
+        .role-card h3 { margin: 0; font-size: 1.1rem; }
+        .panel-logo {
+            /* L'astuce est ici : vh = viewport height */
+            max-height: 70vh;    /* L'image ne dépassera jamais 70% de la hauteur de l'écran */
+            
+            width: 100%;         /* Garde les proportions */
+            height: 100%;        /* Garde les proportions */
+            object-fit: contain; /* S'assure que l'image n'est jamais coupée */
+        }
+    </style>
+</head>
+<body>
+
+<div class="split-screen">
+    <div class="left-panel">
+    </div>
+
+    <div class="right-panel">
+        <div class="auth-card">
+            <div class="brand-header">
+                <h1>ProNetwork</h1>
+                <p>Join our professional community</p>
+            </div>
+
+            <div class="auth-tabs">
+                <a href="/login">Sign In</a>
+                <a href="/register" class="active">Create Account</a>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <h2>How do you want to join?</h2>
+                <p style="color: #666; font-size: 0.9rem;">Choose the account type that suits you best.</p>
+            </div>
+
+            <div class="role-selection">
+                <a href="/register/user" class="role-card">
+                    <i class="fa-solid fa-user"></i>
+                    <h3>User</h3>
+                </a>
+
+                <a href="/register/company" class="role-card">
+                    <i class="fa-solid fa-building"></i>
+                    <h3>Company</h3>
+                </a>
+            </div>
+
+            <p class="forgot-password" style="margin-top: 40px;">
+                Already have an account? <a href="/login">Log In</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

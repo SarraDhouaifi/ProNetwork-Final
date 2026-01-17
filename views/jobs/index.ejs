@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jobs | ProNetwork</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <div class="main-container">
+        <aside class="left-sidebar">
+            <div class="card">
+                <div style="padding: 15px;">
+                    <h3 style="font-size: 16px; margin-bottom: 10px;">Job Management</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 10px;">
+                            <a href="/jobs" style="text-decoration: none; color: #0a66c2; font-weight: 600;">
+                                <i class="fa-solid fa-paper-plane"></i> My Applications
+                            </a>
+                        </li>
+                        <% if (user.role === 'company') { %>
+                            <li>
+                                <a href="/jobs/manage" style="text-decoration: none; color: #666;">
+                                    <i class="fa-solid fa-list-check"></i> Manage My Listings
+                                </a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <main class="feed-content">
+            <%- include('liste-postulations') %>
+            
+            <hr style="margin: 30px 0; border: 0; border-top: 1px solid #ddd;">
+
+            <h2 style="font-size: 1.2rem; margin-bottom: 20px;">Discover New Jobs</h2>
+            <div id="explore-jobs">
+                <% if (jobs && jobs.length > 0) { %>
+                    <% jobs.forEach(job => { %>
+                        <div class="card" style="padding: 15px; margin-bottom: 10px; display: flex; gap: 15px;">
+                            <img src="<%= job.company.profilePicture || '/images/default-company.png' %>" style="width: 50px; height: 50px; border-radius: 4px;">
+                            <div style="flex-grow: 1;">
+                                <h4 style="margin: 0;"><a href="/jobs/<%= job._id %>" style="text-decoration: none; color: #0a66c2;"><%= job.title %></a></h4>
+                                <p style="margin: 0; font-size: 14px;"><%= job.company.companyName %></p>
+                                <p style="color: #666; font-size: 12px;"><%= job.location %> • <%= job.type %></p>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } %>
+            </div>
+        </main>
+
+        <aside class="right-sidebar">
+            <div class="card" style="padding: 15px;">
+                <h4>Job Tips</h4>
+                <p style="font-size: 13px; color: #666; margin-top: 10px;">Complete your profile to 100% to increase your chances of being contacted by recruiters.</p>
+            </div>
+        </aside>
+    </div>
+</body>
+</html>

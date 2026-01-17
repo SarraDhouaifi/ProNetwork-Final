@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNetwork</title>
+    <link rel="stylesheet" href="/assets/css/style.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+<%- include('partials/navbar') %>
+
+<div class="container main-content">
+    <div class="feed-container" style="max-width: 700px; margin: 20px auto;">
+        
+        <div style="margin-bottom: 15px;">
+            <a href="/feed" class="btn btn-secondary">&larr; Retour au fil d'actualité</a>
+        </div>
+
+        <div class="post-card">
+            <div class="post-header">
+                <img src="<%= post.author.profilePicture || '/assets/images/default-user.png' %>" alt="Profile" class="post-avatar">
+                <div class="post-info">
+                    <a href="/user/<%= post.author._id %>" class="author-name">
+                        <%= post.author.firstName %> <%= post.author.lastName %>
+                    </a>
+                    <span class="author-headline"><%= post.author.headline || 'Membre' %></span>
+                    <span class="post-date"><%= new Date(post.createdAt).toLocaleDateString() %></span>
+                </div>
+            </div>
+
+            <div class="post-content">
+                <p><%= post.text %></p>
+                <% if (post.image) { %>
+                    <img src="<%= post.image %>" alt="Post Image" class="post-image-content">
+                <% } %>
+            </div>
+
+            <div class="post-stats">
+                <span><%= post.likes.length %> Likes</span>
+                <span><%= post.comments.length %> Comments</span>
+            </div>
+
+            <div class="post-actions">
+                <button class="action-btn like-btn" data-post-id="<%= post._id %>">
+                    <i class="fas fa-thumbs-up"></i> Like
+                </button>
+            </div>
+
+            <div class="comments-section">
+                <div class="existing-comments">
+                    <% post.comments.forEach(comment => { %>
+                        <div class="comment-item" style="border-top: 1px solid #eee; padding: 10px 0;">
+                            <strong>
+                                <%= comment.userName || (comment.user ? comment.user.firstName : 'Utilisateur') %>
+                            </strong>
+                            <p style="margin: 0;"><%= comment.text %></p>
+                        </div>
+                    <% }) %>
+                </div>
+                
+                <form class="comment-form" action="/post/<%= post._id %>/comment" method="POST" style="margin-top: 15px; display:flex; gap:10px;">
+                    <input type="text" name="commentText" placeholder="Écrire un commentaire..." class="form-control" required>
+                    <button type="submit" class="btn btn-primary">Envoyer</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer style="text-align: center; padding: 20px; margin-top: 50px; color: #777;">
+        <p>&copy; 2024 ProNetwork. Tous droits réservés.</p>
+    </footer>
+</body>
+</html>
+
+<script>
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const postId = this.dataset.postId;
+            try {
+                const res = await fetch(`/post/${postId}/like`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    location.reload(); // Recharger pour voir le like mis à jour
+                }
+            } catch (err) { console.error(err); }
+        });
+    });
+</script>

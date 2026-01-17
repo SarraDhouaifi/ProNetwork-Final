@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | ProNetwork</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body style="background-color: #f3f2ef; margin: 0;"> 
+    
+    <%- include('../partials/navbar') %>
+
+    <div style="max-width: 1100px; margin: 40px auto; padding: 0 20px; font-family: 'Segoe UI', system-ui, sans-serif;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 20px; border-radius: 10px; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <h1 style="color: #0a66c2; margin: 0; font-size: 24px;">
+                <i class="fa-solid fa-shield-halved"></i> ProNetwork Admin
+            </h1>
+            <span style="background: #eef3f8; color: #0a66c2; padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 14px; border: 1px solid #0a66c2;">
+                <i class="fa-solid fa-user-tie"></i> Logged in as: <%= locals.user ? locals.user.email : 'Admin' %>
+            </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr; gap: 30px;">
+            
+            <section style="background: white; padding: 25px; border-radius: 10px; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h2 style="margin-top: 0; font-size: 20px; color: #1f2937; border-bottom: 2px solid #f3f2ef; padding-bottom: 10px;">
+                    <i class="fa-solid fa-users-gear"></i> Member Management
+                </h2>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                        <thead>
+                            <tr style="background: #f8fafc; text-align: left;">
+                                <th style="padding: 15px; border-bottom: 2px solid #e2e8f0; color: #475569;">Profile</th>
+                                <th style="padding: 15px; border-bottom: 2px solid #e2e8f0; color: #475569;">Role</th>
+                                <th style="padding: 15px; border-bottom: 2px solid #e2e8f0; color: #475569;">Status</th>
+                                <th style="padding: 15px; border-bottom: 2px solid #e2e8f0; color: #475569;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% users.forEach(u => { %>
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 15px;">
+                                        <strong style="color: #1e293b; display: block;"><%= u.firstName %> <%= u.lastName || '' %></strong>
+                                        <small style="color: #64748b;"><i class="fa-solid fa-envelope"></i> <%= u.email %></small>
+                                    </td>
+                                    <td style="padding: 15px;">
+                                        <span style="text-transform: uppercase; font-size: 11px; font-weight: 800; padding: 5px 10px; border-radius: 15px; background: <%= u.role === 'company' ? '#dcfce7' : '#e0f2fe' %>; color: <%= u.role === 'company' ? '#166534' : '#075985' %>;">
+                                            <%= u.role %>
+                                        </span>
+                                    </td>
+                                    <td style="padding: 15px;">
+                                        <span style="display: flex; align-items: center; gap: 5px; color: <%= u.isBanned ? '#ef4444' : '#22c55e' %>; font-weight: bold;">
+                                            <i class="fa-solid <%= u.isBanned ? 'fa-user-slash' : 'fa-user-check' %>"></i>
+                                            <%= u.isBanned ? 'BANNED' : 'ACTIVE' %>
+                                        </span>
+                                    </td>
+                                    <td style="padding: 15px; display: flex; gap: 10px;">
+                                        <form action="/admin/user/<%= u._id %>/toggle-ban" method="POST">
+                                            <button type="submit" style="cursor:pointer; padding: 8px 14px; border-radius: 6px; border: none; background: <%= u.isBanned ? '#22c55e' : '#ef4444' %>; color: white; font-weight: 600;">
+                                                <%= u.isBanned ? 'Unban' : 'Ban' %>
+                                            </button>
+                                        </form>
+                                        <form action="/admin/user/<%= u._id %>/delete" method="POST" onsubmit="return confirm('Permanently delete this account?');">
+                                            <button type="submit" style="cursor:pointer; padding: 8px 14px; border-radius: 6px; border: 1px solid #ef4444; background: white; color: #ef4444; font-weight: 600;">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section style="background: white; padding: 25px; border-radius: 10px; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h2 style="margin-top: 0; font-size: 20px; color: #1f2937; border-bottom: 2px solid #f3f2ef; padding-bottom: 10px;">
+                    <i class="fa-solid fa-comment-slash"></i> Comment Moderation
+                </h2>
+                <% if (posts && posts.some(p => p.comments && p.comments.length > 0)) { %>
+                    <% posts.forEach(post => { %>
+                        <% if(post.comments && post.comments.length > 0) { %>
+                            <div style="border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 15px; overflow: hidden;">
+                                <div style="padding: 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                                    <strong style="color: #0a66c2;"><%= post.author ? post.author.firstName : 'Author' %>:</strong>
+                                    <span style="color: #475569; font-style: italic; font-size: 14px;">
+                                        "<%= post.text ? post.text.substring(0,60) : 'Multimedia content' %>..."
+                                    </span>
+                                </div>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <% post.comments.forEach(comment => { %>
+                                        <li style="padding: 12px 15px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: white;">
+                                            <span style="font-size: 14px;"><strong><%= comment.userName %>:</strong> <%= comment.text %></span>
+                                            <form action="/admin/post/<%= post._id %>/comment/<%= comment._id %>/delete" method="POST">
+                                                <button type="submit" style="color: #ef4444; border: none; background: none; cursor: pointer;">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </form>
+                                        </li>
+                                    <% }) %>
+                                </ul>
+                            </div>
+                        <% } %>
+                    <% }) %>
+                <% } else { %>
+                    <p style="text-align: center; color: #94a3b8; padding: 20px;">No comments to moderate.</p>
+                <% } %>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

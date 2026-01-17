@@ -1,0 +1,24 @@
+<div id="sendModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Send Post</h3>
+        <div class="friend-list">
+            <div class="friend-item" onclick="sendToSelf()">
+                <div class="avatar-sm" style="background:#ccc;">Me</div>
+                <span>Send to myself</span>
+            </div>
+            </div>
+        <button onclick="closeModal()" class="btn-social">Cancel</button>
+    </div>
+</div>
+
+<div id="chatWindow" class="chat-window">
+    <div class="chat-header">
+        <span id="chatWith">Chat</span>
+        <button onclick="closeChat()" style="background:none; border:none; color:white;">x</button>
+    </div>
+    <div class="chat-body" id="chatBody">
+        </div>
+    <div class="chat-footer">
+        <input type="text" placeholder="Type a message..." style="width:100%; border:none; outline:none;">
+    </div>
+</div>

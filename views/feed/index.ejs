@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed | ProNetwork</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Styles to unify media buttons and options */
+        .media-buttons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-top: 10px;
+            flex-wrap: wrap;
+        }
+        .post-option-btn, .post-option-link {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #5e5e5e;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            padding: 6px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .post-option-btn:hover, .post-option-link:hover {
+            background-color: #f3f2f0;
+        }
+        .btn-action {
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #666;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .btn-action:hover { background-color: #f3f2f0; }
+        .comment-media { max-width: 100%; border-radius: 8px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <%- include('../partials/navbar', { user }) %>
+
+    <div class="main-container">
+
+        <aside class="left-sidebar">
+            <div class="card profile-card">
+                <div class="profile-bg"></div>
+                <div class="profile-info">
+                    <a href="/profile" style="text-decoration: none; color: inherit;">
+                        <div class="avatar-lg">
+                            <% if(user.profilePicture) { %>
+                                <img src="<%= user.profilePicture %>" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                            <% } else { %>
+                                <div style="width:100%; height:100%; background:#2DD4BF; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; font-weight:bold;">
+                                    <%= user.firstName ? user.firstName.charAt(0) : (user.companyName ? user.companyName.charAt(0) : 'U') %>
+                                </div>
+                            <% } %>
+                        </div>
+                        <h3><%= user.companyName ? user.companyName : (user.firstName + ' ' + (user.lastName || '')) %></h3>
+                    </a>
+
+                    <p class="headline">
+                        <% if (user.companyName) { %>
+                            <%= user.industry || 'Company on ProNetwork' %>
+                        <% } else if (user.experiences && user.experiences.length > 0) { %>
+                            <%= user.experiences[0].title %> at <%= user.experiences[0].company %>
+                        <% } else { %>
+                            <%= user.headline || 'Professional at ProNetwork' %>
+                        <% } %>
+                    </p>
+                    <p class="location"><i class="fa-solid fa-location-dot"></i> <%= user.location || 'Location not set' %></p>
+                </div>
+
+                <div class="profile-stats">
+                    <div class="stat-row">
+                        <span>Connections</span>
+                        <span class="stat-num"><%= user.connectionsCount || 0 %></span>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <a href="#"><i class="fa-solid fa-bookmark"></i> My Items</a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="feed-content">
+
+            <div class="card create-post">
+                <form action="/post/create" method="POST" enctype="multipart/form-data">
+                    <div class="input-row">
+                        <div class="avatar-sm">
+                            <% if(user.profilePicture) { %>
+                                <img src="<%= user.profilePicture %>" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                            <% } else { %>
+                                <div style="width:100%; height:100%; background:#2DD4BF; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px;">
+                                    <%= user.firstName ? user.firstName.charAt(0) : 'U' %>
+                                </div>
+                            <% } %>
+                        </div>
+                        <input type="text" name="text" placeholder="Start a post..." required>
+                    </div>
+
+                    <div class="media-buttons">
+                        <input type="file" name="postImage" id="postImageFeed" style="display: none;">
+                        <label for="postImageFeed" class="post-option-btn">
+                            <i class="fa-regular fa-image" style="color: #378fe9;"></i> Photo
+                        </label>
+                        <button type="button" class="post-option-btn"><i class="fa-brands fa-youtube" style="color: #5f9b41;"></i> Video</button>
+                        <button type="button" class="post-option-btn"><i class="fa-regular fa-calendar-days" style="color: #c37d16;"></i> Event</button>
+                        
+                        <% if (user.role === 'company' || user.companyName) { %>
+                            <a href="/jobs/create" class="post-option-link">
+                                <i class="fa-solid fa-briefcase" style="color: #a872e8;"></i> Job Offer
+                            </a>
+                        <% } %>
+                        
+                        <button type="submit" class="btn-primary" style="margin-left: auto; width: auto; padding: 5px 20px; border-radius: 20px;">Post</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="feed-container">
+                <% 
+                   const items = typeof feedItems !== 'undefined' ? feedItems : (typeof posts !== 'undefined' ? posts : []); 
+                %>
+
+                <% if (items.length > 0) { %>
+                    <% items.forEach(item => { %>
+
+                        <% if (item.docType === 'job') { %>
+                            <div class="card post-card job-card" style="background-color: #f3f9ff; border: 1px solid #e0ebf5;">
+                                <div class="post-header">
+                                    <a href="/user/<%= item.company._id %>">
+                                        <div class="avatar-sm">
+                                            <img src="<%= item.company.profilePicture || '/assets/images/default.png' %>" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                                        </div>
+                                    </a>
+                                    <div class="post-info">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <a href="/user/<%= item.company._id %>" style="text-decoration:none; color:inherit;">
+                                                <h4 style="margin:0;"><%= item.company.companyName || item.company.firstName %></h4>
+                                            </a>
+                                            <span style="background: #dbeafe; color: #1e40af; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600;">
+                                                <i class="fa-solid fa-briefcase"></i> JOB OFFER
+                                            </span>
+                                        </div>
+                                        <p style="color: #666; font-size: 12px; margin-top: 2px;">Hiring • <%= new Date(item.createdAt).toLocaleDateString() %></p>
+                                    </div>
+                                </div>
+                                <div class="post-body">
+                                    <h3 style="margin-bottom: 5px; color: #1f2937;"><%= item.title %></h3>
+                                    <p style="font-size: 14px; color: #555; margin-bottom: 10px;">
+                                        <i class="fa-solid fa-location-dot"></i> <%= item.location %> &nbsp;|&nbsp; 
+                                        <i class="fa-solid fa-clock"></i> <%= item.type || 'Full-time' %>
+                                    </p>
+                                    <p style="color: #4b5563;"><%= item.description.substring(0, 150) %>...</p>
+                                </div>
+                                <div class="post-actions" style="justify-content: space-between; padding-top: 10px; border-top: 1px solid #e0ebf5; margin-top: 10px;">
+                                    <span style="font-size: 12px; color: #666; align-self: center;">
+                                        <i class="fa-solid fa-users"></i> <%= item.applicants ? item.applicants.length : 0 %> applicants
+                                    </span>
+                                    <div class="action-buttons">
+                                        <% 
+                                            const isMyOffer = item.company._id.toString() === user._id.toString();
+                                            const hasApplied = item.applicants && item.applicants.some(id => id.toString() === user._id.toString()); 
+                                        %>
+                                        <% if (isMyOffer) { %>
+                                            <a href="/jobs/<%= item._id %>/edit" class="btn-primary" style="padding: 6px 20px; background-color: #666; border-color: #666; text-decoration: none; display: inline-block; font-size: 14px; border-radius: 4px;">Edit</a>
+                                        <% } else if (hasApplied) { %>
+                                            <button class="btn-primary" style="padding: 6px 20px; background-color: #057642; border-color: #057642;" disabled>Applied</button>
+                                        <% } else { %>
+                                            <form action="/jobs/<%= item._id %>/apply" method="POST" style="display:inline;">
+                                                <button type="submit" class="btn-primary" style="padding: 6px 20px; font-weight: 600; border-radius: 4px;">Apply</button>
+                                            </form>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <% } else { %>
+                            <div class="card post-card" id="post-<%= item._id %>">
+                                <div class="post-header">
+                                    <a href="/user/<%= item.author._id %>">
+                                        <div class="avatar-sm">
+                                            <% if(item.author.profilePicture) { %>
+                                                <img src="<%= item.author.profilePicture %>" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                                            <% } else { %>
+                                                <div style="width:100%; height:100%; background:#ccc; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff;">
+                                                    <%= item.author.firstName ? item.author.firstName.charAt(0) : 'P' %>
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                    </a>
+                                    <div class="post-info">
+                                        <a href="/user/<%= item.author._id %>" style="text-decoration:none; color:inherit;">
+                                            <h4><%= item.author.companyName || (item.author.firstName + ' ' + (item.author.lastName || '')) %></h4>
+                                        </a>
+                                        <p><%= item.author.headline || item.author.industry || 'Member' %></p>
+                                        <span class="time"><%= new Date(item.createdAt).toLocaleDateString() %></span>
+                                    </div>
+
+                                    <% if (user._id.toString() === item.author._id.toString()) { %>
+                                        <div style="margin-left:auto; display:flex; gap:10px;">
+                                            <button type="button" class="edit-post-btn btn-action" data-post-id="<%= item._id %>"><i class="fa-solid fa-pen"></i></button>
+                                            <button type="button" class="delete-post-btn btn-action" data-post-id="<%= item._id %>"><i class="fa-solid fa-trash"></i></button>
+                                        </div>
+                                    <% } %>
+                                </div>
+
+                                <div class="post-body">
+                                    <% if (item.sharedPost) { %>
+                                        <p style="font-size:13px;color:#666;margin-bottom:10px;"><strong><%= item.author.firstName %></strong> shared a post</p>
+                                        <div style="border:1px solid #ddd;padding:15px;border-radius:8px;background:#fff;">
+                                            <% if (item.sharedPost.author) { %>
+                                                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                                                    <div class="avatar-sm">
+                                                        <img src="<%= item.sharedPost.author.profilePicture || '/assets/images/default.png' %>" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                                                    </div>
+                                                    <div>
+                                                        <strong><%= item.sharedPost.author.firstName %> <%= item.sharedPost.author.lastName || '' %></strong>
+                                                        <div style="font-size:12px;color:#777;"><%= new Date(item.sharedPost.createdAt).toLocaleDateString() %></div>
+                                                    </div>
+                                                </div>
+                                                <p><%= item.sharedPost.text %></p>
+                                                <% if (item.sharedPost.image) { %><img src="<%= item.sharedPost.image %>" style="width:100%;border-radius:6px;margin-top:8px;"><% } %>
+                                            <% } else { %>
+                                                <p style="color:#888; font-style:italic;">Original content is no longer available.</p>
+                                            <% } %>
+                                        </div>
+                                    <% } else { %>
+                                        <div class="post-text" data-post-id="<%= item._id %>">
+                                            <p class="post-content"><%= item.text %></p>
+                                            <textarea class="edit-input" style="display:none; width:100%; padding:10px; border-radius:8px;"><%= item.text %></textarea>
+                                            <div class="edit-actions" style="display:none; margin-top:5px;">
+                                                <button class="save-edit btn-primary" data-post-id="<%= item._id %>">Save</button>
+                                                <button class="cancel-edit btn-action">Cancel</button>
+                                            </div>
+                                        </div>
+                                        <% if(item.image) { %><img src="<%= item.image %>" alt="Post" style="width: 100%; border-radius: 8px; margin-top: 10px;"><% } %>
+                                    <% } %>
+                                </div>
+
+                                <div class="post-stats">
+                                    <span><i class="fa-solid fa-thumbs-up" style="color: #378fe9;"></i> <span id="likes-count-<%= item._id %>"><%= item.likes ? item.likes.length : 0 %></span></span>
+                                    <span><span id="comments-count-<%= item._id %>"><%= item.comments ? item.comments.length : 0 %></span> comments</span>
+                                </div>
+                                <hr>
+                                <div class="post-actions">
+                                    <button class="btn-action like-btn" data-post-id="<%= item._id %>">
+                                        <i class="fa-regular fa-thumbs-up"></i> Like
+                                    </button>
+                                    <button class="btn-action comment-toggle-btn" data-post-id="<%= item._id %>">
+                                        <i class="fa-regular fa-comment"></i> Comment
+                                    </button>
+                                    <button class="btn-action share-btn" onclick="sharePost('<%= item._id %>')">
+                                        <i class="fa-solid fa-share-nodes"></i> Share
+                                    </button>
+                                    <button class="btn-action send-btn" data-post-id="<%= item._id %>">
+                                        <i class="fa-regular fa-paper-plane"></i> Send
+                                    </button>
+                                </div>
+
+                                <div class="comment-section" id="comments-<%= item._id %>" style="display:none; padding: 15px; background: #f9f9f9; border-top:1px solid #eee;">
+                                    <div id="comment-list-<%= item._id %>">
+                                        <% if(item.comments) { %>
+                                            <% item.comments.forEach(c => { %>
+                                                <div class="comment-box" id="comment-<%= c._id %>" style="margin-bottom:12px;">
+                                                    <strong><%= c.user ? (c.user.firstName + ' ' + (c.user.lastName || '')) : (c.userName || 'User') %></strong>
+                                                    <div class="comment-text"><%= c.text %></div>
+                                                    
+                                                    <div class="comment-actions" style="font-size:12px; color:#666; margin-top:4px;">
+                                                        <span class="comment-like-btn" data-post-id="<%= item._id %>" data-comment-id="<%= c._id %>" style="cursor:pointer;">Like</span> • 
+                                                        <span class="comment-reply-btn" data-comment-id="<%= c._id %>" style="cursor:pointer;">Reply</span> • 
+                                                        ❤️ <span id="comment-likes-<%= c._id %>"><%= c.likes ? c.likes.length : 0 %></span>
+                                                    </div>
+
+                                                    <div class="replies-container" id="replies-<%= c._id %>" style="margin-left:30px; border-left:2px solid #ddd; padding-left:10px;">
+                                                        <% if(c.replies) { c.replies.forEach(reply => { %>
+                                                            <div class="reply-box" style="margin-top:8px; font-size:12px;">
+                                                                <strong><%= reply.user?.firstName %></strong>: <%= reply.text %>
+                                                            </div>
+                                                        <% })} %>
+                                                    </div>
+                                                </div>
+                                            <% }) %>
+                                        <% } %>
+                                    </div>
+
+                                <form class="comment-form" 
+                                    data-post-id="<%= item._id %>" 
+                                    onsubmit="submitComment(event, '<%= item._id %>')" 
+                                    enctype="multipart/form-data" 
+                                    style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+                                    
+                                    <div style="display:flex; gap:8px;">
+                                        <input type="text" name="commentText" placeholder="Write a comment..." 
+                                            style="flex:1; padding:8px 15px; border:1px solid #ccc; border-radius:20px; outline:none;" required>
+                                        
+                                        <input type="file" name="commentImage" style="display:none;" id="file-<%= item._id %>">
+                                        <label for="file-<%= item._id %>" style="cursor:pointer; padding-top:5px;"><i class="fa-regular fa-image"></i></label>
+                                        
+                                        <button type="submit" class="btn-primary" style="padding:5px 15px; border-radius:20px;">Post</button>
+                                    </div>
+                                </form>
+                                </div>
+                            </div>
+                        <% } %>
+                    <% }) %>
+                <% } else { %>
+                    <div class="card" style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fa-regular fa-newspaper" style="font-size: 48px; margin-bottom: 15px; color: #ccc;"></i>
+                        <p>No posts or jobs yet. Share something with your network!</p>
+                    </div>
+                <% } %>
+            </div>
+        </main>
+
+        <aside class="right-sidebar">
+            <div class="card">
+                <h3 style="font-size: 16px; margin-bottom: 15px;">Trending Topics</h3>
+                <ul class="trend-list" style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 12px;">
+                        <span class="hashtag" style="font-weight: 600; color: #333; display: block;">#AI</span>
+                        <span class="count" style="font-size: 12px; color: #666;">12.5K posts</span>
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <span class="hashtag" style="font-weight: 600; color: #333; display: block;">#WebDevelopment</span>
+                        <span class="count" style="font-size: 12px; color: #666;">8.2K posts</span>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+    </div>
+
+    <div id="sendPostModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">
+        <div style="background-color:#fff; margin:10% auto; padding:20px; border-radius:8px; width:90%; max-width:400px; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0;">Send to a connection</h3>
+                <span id="closeSendModal" style="cursor:pointer; font-size:24px;">&times;</span>
+            </div>
+            
+            <input type="hidden" id="postIdToSend">
+            
+            <div style="margin-bottom:15px;">
+                <input type="text" id="userSearchInput" placeholder="Search a connection..." 
+                    style="width:100%; padding:10px; border:1px solid #ddd; border-radius:20px; outline:none;">
+            </div>
+
+            <div id="connectionsList" style="max-height:300px; overflow-y:auto; margin-bottom:15px;">
+                </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/notifications.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            const modal = $('#sendPostModal');
+            const closeBtn = $('#closeSendModal');
+            let currentPostId = null;
+
+            // 1. Open Modal
+            $('.send-btn').on('click', function() {
+                currentPostId = $(this).data('post-id');
+                $('#postIdToSend').val(currentPostId);
+                modal.show();
+                loadConnections(); 
+            });
+
+            // 2. Close Modal
+            closeBtn.on('click', () => modal.hide());
+            $(window).on('click', (e) => { if($(e.target).is(modal)) modal.hide(); });
+
+            // 3. Load Connections
+            function loadConnections() {
+                $('#connectionsList').html('<p style="text-align:center; color:#666;">Loading...</p>');
+                
+                $.get('/api/connections', function(data) {
+                    let html = '';
+                    if (data && data.length > 0) {
+                        data.forEach(friend => {
+                            html += `
+                                <div class="connection-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <img src="${friend.profilePicture || '/assets/images/default.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
+                                        <span style="font-weight:600; font-size:14px;">${friend.firstName} ${friend.lastName || ''}</span>
+                                    </div>
+                                    <button class="confirm-send-btn btn-primary" data-user-id="${friend._id}" style="padding:5px 15px; border-radius:20px; font-size:12px;">
+                                        Send
+                                    </button>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        html = '<p style="text-align:center; color:#999; padding:10px;">No connections found.</p>';
+                    }
+                    $('#connectionsList').html(html);
+                });
+            }
+
+            // 4. Send and Redirect
+            $(document).on('click', '.confirm-send-btn', function() {
+                const userId = $(this).data('user-id');
+                const postId = $('#postIdToSend').val();
+                const btn = $(this);
+
+                btn.text('Sending...').prop('disabled', true);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/post/send-to-user',
+                    data: JSON.stringify({ postId: postId, receiverId: userId }),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        if (response.success && response.conversationId) {
+                            window.location.href = `/messages/t/${response.conversationId}`;
+                        } else {
+                            btn.text('Sent !').css('background-color', '#057642');
+                            setTimeout(() => modal.hide(), 800);
+                        }
+                    },
+                    error: function() {
+                        alert('Error while sending the post.');
+                        btn.text('Send').prop('disabled', false);
+                    }
+                });
+            });
+
+            // 5. Search
+            $('#userSearchInput').on('keyup', function() {
+                let value = $(this).val().toLowerCase();
+                $(".connection-item").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+</body>
+</html>

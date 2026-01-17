@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= profileUser.firstName %> <%= profileUser.lastName %> | ProNetwork</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+<%- include('../partials/navbar', { user }) %>
+
+<div class="profile-container">
+
+    <main class="profile-main">
+
+        <div class="profile-header-card">
+            <div class="cover-photo"></div>
+            <div class="profile-picture-container">
+                <% if(profileUser.profilePicture) { %>
+                    <img src="<%= profileUser.profilePicture %>" class="profile-picture" alt="Profile">
+                <% } else { %>
+                    <div class="profile-picture" style="display: flex; align-items: center; justify-content: center; font-size: 60px; color: #4F46E5; background: #eee; font-weight: bold;">
+                        <%= profileUser.firstName.charAt(0) %><%= profileUser.lastName.charAt(0) %>
+                    </div>
+                <% } %>
+            </div>
+
+            <div class="profile-info-section">
+                <h1 class="profile-name">
+                    <%= profileUser.firstName %> <%= profileUser.lastName %>
+                </h1>
+                <p class="profile-headline"><%= profileUser.headline || 'No headline added' %></p>
+                <p class="profile-location">
+                    <i class="fa-solid fa-location-dot"></i> <%= profileUser.location || 'Location not set' %>
+                </p>
+                <p style="font-size: 14px; color: #4F46E5; font-weight: 600; margin-top: 5px;">
+                    <%= followersCount %> connections
+                </p>
+
+                <div class="action-buttons">
+                    <% if (connectionStatus === 'connected') { %>
+                        <div class="connected-dropdown">
+                            <button class="btn-pill btn-outline connection-trigger">
+                                <i class="fa-solid fa-check"></i> Connected <i class="fa-solid fa-caret-down"></i>
+                            </button>
+                            <div class="connection-menu">
+                                <button onclick="disconnectUser('<%= profileUser._id %>')">
+                                    <i class="fa-solid fa-user-xmark"></i> Unconnect
+                                </button>
+                                <button onclick="blockUser('<%= profileUser._id %>')" class="danger">
+                                    <i class="fa-solid fa-ban"></i> Block
+                                </button>
+                            </div>
+                        </div>
+                        <button class="btn-pill btn-fill">
+                            <i class="fa-solid fa-paper-plane"></i> Message
+                        </button>
+                    <% } else if (connectionStatus === 'request_sent') { %>
+                        <button class="btn-pill btn-outline" disabled>
+                            <i class="fa-solid fa-clock"></i> Invitation Sent
+                        </button>
+                        <button class="btn-pill btn-outline">Message</button>
+                    <% } else if (connectionStatus === 'request_received') { %>
+                        <button onclick="acceptConnectionRequest('<%= profileUser._id %>')" class="btn-pill btn-fill">Accept</button>
+                        <button onclick="ignoreConnectionRequest('<%= profileUser._id %>')" class="btn-pill btn-outline">Ignore</button>
+                    <% } else if (connectionStatus === 'blocked') { %>
+                        <div class="blocked-dropdown">
+                            <button class="btn-pill btn-outline blocked-trigger">
+                                <i class="fa-solid fa-ban"></i> Blocked <i class="fa-solid fa-caret-down"></i>
+                            </button>
+                            <div class="blocked-menu">
+                                <button onclick="unblockUser('<%= profileUser._id %>')">
+                                    <i class="fa-solid fa-user-check"></i> Unblock
+                                </button>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <button onclick="sendConnectionRequest('<%= profileUser._id %>')" id="btn-connect-<%= profileUser._id %>" class="btn-pill btn-fill">
+                            <i class="fa-solid fa-user-plus"></i> Connect
+                        </button>
+                        <button class="btn-pill btn-outline">Message</button>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-header">Activity</div>
+            <div class="section-body">
+                <% if (posts && posts.length > 0) { %>
+                    <% posts.forEach(post => { %>
+                        <div class="post-card" id="post-<%= post._id %>" style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                            <div class="post-header" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                <div class="avatar-sm">
+                                    <% if(profileUser.profilePicture) { %>
+                                        <img src="<%= profileUser.profilePicture %>" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                                    <% } else { %>
+                                        <div style="width:100%; height:100%; background:#ccc; border-radius:50%;"></div>
+                                    <% } %>
+                                </div>
+                                <div class="post-info" style="flex: 1;">
+                                    <h4 style="font-size: 14px; font-weight: 600; margin: 0; color: #333;">
+                                        <%= profileUser.firstName %> <%= profileUser.lastName %>
+                                    </h4>
+                                    <p style="font-size: 12px; color: #666; margin: 2px 0;"><%= profileUser.headline %></p>
+                                    <span style="font-size: 12px; color: #666;"><%= new Date(post.createdAt).toLocaleDateString() %> • <i class="fa-solid fa-earth-americas"></i></span>
+                                </div>
+                            </div>
+                            <div class="post-body">
+                                <p style="font-size: 14px; color: #333; line-height: 1.5;"><%= post.text %></p>
+                                <% if(post.image) { %>
+                                    <img src="<%= post.image %>" style="width: 100%; border-radius: 8px; margin-top: 10px;">
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p class="text-gray" style="font-style: italic; text-align: center;">No recent activity.</p>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-header">About</div>
+            <div class="section-body">
+                <% if(profileUser.about) { %>
+                    <p style="white-space: pre-line;"><%= profileUser.about %></p>
+                <% } else { %>
+                    <p class="text-gray" style="font-style: italic;">No summary provided.</p>
+                <% } %>
+            </div>
+        </div>
+
+    </main>
+
+    <aside class="profile-sidebar">
+        <div class="card sidebar-section">
+            <h3 class="sidebar-title">Contact Information</h3>
+            <ul class="contact-list">
+                <li class="contact-item">
+                    <div class="contact-icon"><i class="fa-regular fa-envelope"></i></div>
+                    <div style="overflow: hidden;">
+                        <div style="font-size:11px;" class="text-gray">Email</div>
+                        <div style="font-size:13px;"><%= profileUser.email %></div>
+                    </div>
+                </li>
+                <% if(profileUser.contactInfo && profileUser.contactInfo.phone) { %>
+                <li class="contact-item">
+                    <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+                    <div>
+                        <div style="font-size:11px;" class="text-gray">Phone</div>
+                        <div style="font-size:13px;"><%= profileUser.contactInfo.phone %></div>
+                    </div>
+                </li>
+                <% } %>
+            </ul>
+        </div>
+
+        <div class="card sidebar-section" style="text-align: center;">
+            <h3 class="sidebar-title">Network</h3>
+            <div style="font-size: 32px; font-weight: 700; color: #0a66c2;"><%= followersCount %></div>
+            <div style="font-size:13px;" class="text-gray">Professional connections</div>
+        </div>
+        
+        <% if (profileUser.firstName) { %>
+        <div class="card sidebar-section">
+            <h3 class="sidebar-title">Curriculum Vitae</h3>
+            <a href="/profile/download-cv/<%= profileUser._id %>" class="btn-resume-download" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; background: #0a66c2; color: white; padding: 10px; border-radius: 25px; font-weight: 600; font-size: 14px; transition: 0.3s;">
+                <i class="fa-solid fa-file-pdf"></i> Download CV
+            </a>
+        </div>
+        <% } %>
+    </aside>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+</body>
+</html>

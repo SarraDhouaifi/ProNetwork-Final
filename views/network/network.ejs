@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Network | ProNetwork</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <%- include('../partials/navbar', { user }) %>
+
+<div class="main-container" style="grid-template-columns: 1fr;">
+    
+    <div class="card">
+        <div class="section-header">Invitations</div>
+        <div class="section-body">
+            <% if (invitations.length === 0) { %>
+                <p class="text-gray">No pending invitations</p>
+            <% } %>
+
+            <% invitations.forEach(invite => { %>
+                <div class="contact-item">
+                    <div class="avatar-sm">
+                        <% if (invite.sender.profilePicture) { %>
+                            <img src="<%= invite.sender.profilePicture %>">
+                        <% } else { %>
+                            <%= invite.sender.firstName[0] %>
+                        <% } %>
+                    </div>
+                    <div style="flex:1">
+                        <strong><%= invite.sender.firstName %> <%= invite.sender.lastName %></strong>
+                        <p class="text-gray"><%= invite.sender.headline %></p>
+                    </div>
+                    <button onclick="acceptConnectionRequest('<%= invite.sender._id %>')" class="btn-pill btn-fill">Accept</button>
+                    <button onclick="ignoreConnectionRequest('<%= invite.sender._id %>')" class="btn-pill btn-outline">Ignore</button>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+
+   <div class="card">
+    <div class="section-header">My Connections <% if (connectionsCount > 0) { %>(<%= connectionsCount %>)<% } %></div>
+    <div class="section-body">
+        <% let hasValidConnection = false; %>
+        <% if (connections && connections.length > 0) { %>
+            <% connections.forEach(conn => { %>
+                <% const other = conn.sender && conn.sender._id.toString() === user._id.toString() ? conn.receiver : conn.sender; %>
+                <% if (other) { %>
+                    <% hasValidConnection = true; %>
+                    <div class="contact-item">
+                        <div class="avatar-sm">
+                            <% if (other.profilePicture) { %>
+                                <img src="<%= other.profilePicture %>">
+                            <% } else { %>
+                                <%= other.firstName[0] %><%= other.lastName ? other.lastName[0] : '' %>
+                            <% } %>
+                        </div>
+                        <div style="flex:1">
+                            <strong>
+                                <a href="/user/<%= other._id %>" style="text-decoration: none; color: inherit;">
+                                    <%= other.firstName %> <%= other.lastName || '' %>
+                                </a>
+                            </strong>
+                            <p class="text-gray"><%= other.headline || 'No headline' %></p>
+                        </div>
+                        <a href="/user/<%= other._id %>" class="btn-pill btn-outline">View</a>
+                    </div>
+                <% } %>
+            <% }) %>
+        <% } %>
+
+        <% if (!hasValidConnection) { %>
+            <p class="text-gray" style="text-align: center; padding: 20px;"><%= connectionsCount || 0 %> connections</p>
+        <% } %>
+    </div>
+</div>
+
+    <div class="card">
+        <div class="section-header">People You May Know</div>
+        <div class="section-body">
+            <% suggestions.forEach(s => { %>
+                <div class="contact-item">
+                    <div class="avatar-sm">
+                        <% if (s.profilePicture) { %>
+                            <img src="<%= s.profilePicture %>">
+                        <% } else { %>
+                            <%= s.firstName[0] %>
+                        <% } %>
+                    </div>
+                    <div style="flex:1">
+                        <strong><a href="/user/<%= s._id %>" style="text-decoration: none; color: inherit;"><%= s.firstName %> <%= s.lastName %></a></strong>
+                        <p class="text-gray"><%= s.headline %></p>
+                    </div>
+                    <button id="btn-connect-<%= s._id %>" onclick="sendConnectionRequest('<%= s._id %>')" class="btn-pill btn-fill">
+                        Connect
+                    </button>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" 
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" 
+        crossorigin="anonymous"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

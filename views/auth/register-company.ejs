@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNetwork - Register Company</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+<div class="split-screen">
+    <div class="left-panel"></div>
+
+    <div class="right-panel">
+        <div class="auth-card">
+            <div class="brand-header">
+                <h1>ProNetwork</h1>
+                <p>Hire Top Talent</p> </div>
+
+            <div class="auth-tabs">
+                <a href="/login">Sign In</a>
+                <a href="/register" class="active">Create Account</a>
+            </div>
+
+            <form id="registerCompanyForm">
+                
+                <div class="form-group">
+                    <label>Company Name</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-building"></i>
+                        <input type="text" name="companyName" placeholder="e.g. Google, TechCorp" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Professional Email</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" name="email" placeholder="hr@company.com" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Website</label>
+                        <div class="input-wrapper">
+                            <input type="url" name="website" placeholder="https://..." style="padding-left: 15px;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Headquarters</label>
+                        <div class="input-wrapper">
+                            <input type="text" name="location" placeholder="City" style="padding-left: 15px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" name="password" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Create Company Page</button>
+            </form>
+            
+            <div id="message" style="text-align: center; margin-top: 10px; color: red;"></div>
+
+            <p class="forgot-password">
+                Looking for a job? <a href="/register/user">Register as Candidate</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('registerCompanyForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            // Envoi vers la route COMPANY
+            const res = await fetch('/register/company', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            
+            if (res.ok) {
+                // Redirection vers dashboard ou feed
+                window.location.href = result.redirectUrl || '/dashboard'; 
+            } else {
+                document.getElementById('message').innerText = result.message;
+            }
+        } catch (err) {
+            console.error(err);
+            document.getElementById('message').innerText = "An error occurred.";
+        }
+    });
+</script>
+
+</body>
+</html>

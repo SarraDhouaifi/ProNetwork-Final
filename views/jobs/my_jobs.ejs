@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Jobs | ProNetwork Business</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .job-stats a:hover {
+            background-color: #0a66c2 !important;
+            color: white !important;
+            box-shadow: 0 2px 5px rgba(10, 102, 194, 0.3);
+        }
+        /* Assure que le dropdown est au-dessus du contenu */
+        .dropdown-menu { z-index: 1000; }
+    </style>
+</head>
+<body>
+    
+    <%- include('../partials/navbar') %>
+
+    <div class="main-container">
+        <aside class="left-sidebar">
+            <div class="card profile-card">
+                <div class="profile-bg" style="background: linear-gradient(90deg, #1e293b 0%, #334155 100%);"></div>
+                <div class="profile-info">
+                    <div class="avatar-lg">
+                        <% if(user.profilePicture) { %>
+                            <img src="<%= user.profilePicture %>" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                        <% } else { %>
+                            <div style="width:100%; height:100%; background:#ccc; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px;">
+                                <i class="fa-solid fa-building"></i>
+                            </div>
+                        <% } %>
+                    </div>
+                    <h3><%= user.companyName || user.firstName %></h3> 
+                    <p class="headline"><%= user.headline || 'Company Page' %></p>
+                </div>
+                <div class="sidebar-menu">
+                    <ul class="trend-list" style="margin-top: 10px;">
+                        <li><a href="/jobs/create" class="hashtag"><i class="fa-solid fa-plus-circle"></i> Post a Job</a></li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <main class="feed-content">
+            <div class="card">
+                <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; padding-bottom:15px; border-bottom:1px solid #eee; margin-bottom: 20px;">
+                    <h3>Manage Job Postings (<%= jobs.length %>)</h3>
+                    <a href="/jobs/create" class="btn-primary" style="text-decoration:none; font-size:13px;">+ Post New Job</a>
+                </div>
+
+                <% if(jobs.length === 0) { %>
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fa-solid fa-folder-open" style="font-size: 40px; margin-bottom: 10px; color: #ccc;"></i>
+                        <p>You haven't posted any jobs yet.</p>
+                    </div>
+                <% } else { %>
+                    <div class="full-job-list">
+                        <% jobs.forEach(job => { %>
+                            <div class="job-item" style="display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 0; border-bottom: 1px solid #eee;">
+                                <div class="job-content" style="flex: 1;">
+                                    <h4 class="job-title" style="font-size: 16px; margin-bottom: 5px;"><%= job.title %></h4>
+                                    <p class="job-meta" style="font-size: 13px; color: #666; margin-bottom: 8px;">
+                                        <i class="fa-regular fa-calendar"></i> Posted <%= new Date(job.createdAt).toLocaleDateString() %> 
+                                        &nbsp;•&nbsp; <i class="fa-solid fa-location-dot"></i> <%= job.location %>
+                                        &nbsp;•&nbsp; <span style="background: #eef3f8; padding: 2px 6px; border-radius: 4px; font-size: 11px;"><%= job.type %></span>
+                                    </p>
+                                    <div class="job-stats">
+                                        <% if (job.applicants && job.applicants.length > 0) { %>
+                                            <a href="/jobs/<%= job._id %>/applicants" style="color: #0a66c2; text-decoration: none; background: #eef3f8; padding: 5px 12px; border-radius: 15px; font-size: 13px;">
+                                                <i class="fa-solid fa-users-viewfinder"></i> View <%= job.applicants.length %> Applicants
+                                            </a>
+                                        <% } else { %>
+                                            <span style="color: #666; background: #f3f3f3; padding: 5px 12px; border-radius: 15px; font-size: 13px;">
+                                                <i class="fa-solid fa-users"></i> 0 Applicants
+                                            </span>
+                                        <% } %>
+                                    </div>
+                                </div>
+
+                                <div class="job-actions" style="display: flex; gap: 10px;">
+                                    <a href="/jobs/<%= job._id %>/edit" class="btn-icon" style="background: #eef3f8; padding: 8px; border-radius: 50%; color: #0a66c2; display: inline-flex; align-items: center; justify-content: center; width: 35px; height: 35px;" title="Edit Job">
+                                        <i class="fa-solid fa-pencil"></i>
+                                    </a>
+
+                                    <form action="/jobs/<%= job._id %>/delete" method="POST" onsubmit="return confirm('Are you sure?');">
+                                        <button type="submit" style="background: #fee2e2; padding: 8px; border-radius: 50%; color: #dc2626; border: none; cursor: pointer; width: 35px; height: 35px;">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } %>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

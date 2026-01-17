@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to ProNetwork</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f3f2ef; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        
+        .onboarding-card {
+            background: white; width: 600px; padding: 40px; border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;
+        }
+
+        .step { display: none; animation: fadeIn 0.5s; }
+        .step.active { display: block; }
+
+        h2 { color: #191919; margin-bottom: 10px; font-size: 24px; }
+        p { color: #666; margin-bottom: 30px; }
+
+        /* Option Buttons (Chips) */
+        .options-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 30px; }
+        
+        .option-item {
+            padding: 10px 20px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            transition: 0.2s;
+            user-select: none;
+        }
+
+        .option-item:hover { background: #f3f2ef; }
+        
+        .option-item.selected {
+            background-color: #0a66c2;
+            color: white;
+            border-color: #0a66c2;
+        }
+
+        .input-text {
+            width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 20px;
+        }
+
+        /* Footer Buttons */
+        .btn-row { display: flex; justify-content: space-between; margin-top: 20px; }
+        .btn-next { background: #0a66c2; color: white; padding: 10px 24px; border-radius: 24px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-back { background: transparent; color: #666; padding: 10px 24px; border: none; cursor: pointer; font-weight: 600; }
+        .hidden { visibility: hidden; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="onboarding-card">
+        <div class="step active" id="step-1">
+            <h2>What is your primary goal?</h2>
+            <p>This helps us suggest the right connections.</p>
+            <div class="options-grid" id="goal-options">
+                <div class="option-item" data-value="student">🎓 Student / Internship</div>
+                <div class="option-item" data-value="job_seeker">💼 Job Seeker</div>
+                <div class="option-item" data-value="freelancer">🚀 Freelancer</div>
+                <div class="option-item" data-value="recruiter">👔 Recruiter</div>
+                <div class="option-item" data-value="networking">📈 Just Networking</div>
+            </div>
+            <div class="btn-row">
+                <button class="btn-back hidden">Back</button>
+                <button class="btn-next" onclick="nextStep(1)">Next</button>
+            </div>
+        </div>
+
+        <div class="step" id="step-2">
+            <h2>What roles are you interested in?</h2>
+            <p>Select all that apply.</p>
+            <div class="options-grid multi-select" id="job-options">
+                <div class="option-item" data-value="Software Engineer">Software Engineer</div>
+                <div class="option-item" data-value="Web Developer">Web Developer</div>
+                <div class="option-item" data-value="Data Scientist">Data Scientist</div>
+                <div class="option-item" data-value="UI/UX Designer">UI/UX Designer</div>
+                <div class="option-item" data-value="Product Manager">Product Manager</div>
+                <div class="option-item" data-value="Marketing">Marketing</div>
+            </div>
+            <div class="btn-row">
+                <button class="btn-back" onclick="prevStep(2)">Back</button>
+                <button class="btn-next" onclick="nextStep(2)">Next</button>
+            </div>
+        </div>
+
+        <div class="step" id="step-3">
+            <h2>Which industries interest you?</h2>
+            <p>We will show you news from these sectors.</p>
+            <div class="options-grid multi-select" id="domain-options">
+                <div class="option-item" data-value="IT">IT & Software</div>
+                <div class="option-item" data-value="AI">Artificial Intelligence</div>
+                <div class="option-item" data-value="Finance">Finance</div>
+                <div class="option-item" data-value="Education">Education</div>
+                <div class="option-item" data-value="E-commerce">E-commerce</div>
+                <div class="option-item" data-value="Health">Healthcare</div>
+            </div>
+            <div class="btn-row">
+                <button class="btn-back" onclick="prevStep(3)">Back</button>
+                <button class="btn-next" onclick="nextStep(3)">Next</button>
+            </div>
+        </div>
+
+        <div class="step" id="step-4">
+            <h2>Where are you based?</h2>
+            <p>For job recommendations.</p>
+            
+            <input type="text" id="country-input" class="input-text" placeholder="Country / City (e.g. Tunisia)">
+            
+            <p style="margin-bottom: 10px;">Preferred Work Type:</p>
+            <div class="options-grid" id="location-type-options">
+                <div class="option-item" data-value="onsite">On-site</div>
+                <div class="option-item" data-value="hybrid">Hybrid</div>
+                <div class="option-item" data-value="remote">Remote</div>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn-back" onclick="prevStep(4)">Back</button>
+                <button class="btn-next" onclick="submitPreferences()">Finish</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Store
+        const preferences = {
+            careerGoal: '',
+            jobTypes: [],
+            domains: [],
+            location: { country: '', workType: '' }
+        };
+
+        // UI Logic
+        document.querySelectorAll('.option-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const parent = this.parentElement;
+                
+                // Handle Multi-Select (Job Types, Domains)
+                if (parent.classList.contains('multi-select')) {
+                    this.classList.toggle('selected');
+                } 
+                // Handle Single Select (Goal, Work Type)
+                else {
+                    parent.querySelectorAll('.option-item').forEach(i => i.classList.remove('selected'));
+                    this.classList.add('selected');
+                }
+            });
+        });
+
+        function nextStep(current) {
+            // Collect Data for current step
+            if (current === 1) {
+                const selected = document.querySelector('#goal-options .selected');
+                if (!selected) return alert('Please select a goal');
+                preferences.careerGoal = selected.dataset.value;
+            } 
+            else if (current === 2) {
+                const selected = document.querySelectorAll('#job-options .selected');
+                preferences.jobTypes = Array.from(selected).map(el => el.dataset.value);
+            }
+            else if (current === 3) {
+                const selected = document.querySelectorAll('#domain-options .selected');
+                preferences.domains = Array.from(selected).map(el => el.dataset.value);
+            }
+
+            // Show Next
+            document.getElementById(`step-${current}`).classList.remove('active');
+            document.getElementById(`step-${current + 1}`).classList.add('active');
+        }
+
+        function prevStep(current) {
+            document.getElementById(`step-${current}`).classList.remove('active');
+            document.getElementById(`step-${current - 1}`).classList.add('active');
+        }
+
+        async function submitPreferences() {
+            // Collect Last Step Data
+            preferences.location.country = document.getElementById('country-input').value;
+            const locType = document.querySelector('#location-type-options .selected');
+            preferences.location.workType = locType ? locType.dataset.value : 'hybrid';
+
+            // Send to Backend
+            try {
+                const res = await fetch('/onboarding', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(preferences)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    alert('Error saving preferences');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Server Error');
+            }
+        }
+    </script>
+</body>
+</html>

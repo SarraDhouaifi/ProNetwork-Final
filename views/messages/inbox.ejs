@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messaging | ProNetwork</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Styles remain identical to your original */
+        .main-container {
+            max-width: 1200px !important;
+            display: block !important;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .messaging-container {
+            display: flex;
+            background: white;
+            height: 85vh;
+            width: 100%;
+            max-width: 1100px;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .conversations-sidebar {
+            width: 320px;
+            min-width: 320px;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: bold;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-new-message {
+            background: none;
+            border: none;
+            color: #0a66c2;
+            cursor: pointer;
+            font-size: 18px;
+            transition: transform 0.2s;
+        }
+
+        .btn-new-message:hover { transform: scale(1.1); }
+
+        .conversations-list {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .conversation-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            gap: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            border-bottom: 1px solid #f3f2ef;
+        }
+
+        .conversation-item:hover { background: #f3f2ef; }
+        .conversation-item.active { background: #edf3f8; border-right: 4px solid #0a66c2; }
+        
+        .conv-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+        .conv-info { flex: 1; overflow: hidden; }
+        .conv-name { font-weight: 600; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .conv-last-msg { font-size: 13px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+        }
+
+        .chat-header {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message-sent {
+            align-self: flex-end;
+            background: #0a66c2;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-received {
+            align-self: flex-start;
+            background: #e4e6eb;
+            color: #050505;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .chat-form { display: flex; gap: 10px; }
+        .chat-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        .btn-send {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 450px;
+            margin: 10% auto;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            text-decoration: none;
+            color: #333;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .search-result-item:hover { background: #f3f2ef; }
+    </style>
+</head>
+<body>
+
+    <%- include('../partials/navbar') %>
+
+    <div class="main-container">
+        <div class="messaging-container">
+            
+            <aside class="conversations-sidebar">
+                <div class="sidebar-header">
+                    <span>Messaging</span>
+                    <button id="openSearchModal" class="btn-new-message" title="New message">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                </div>
+                <div class="conversations-list">
+                    <% if (conversations && conversations.length > 0) { %>
+                        <% conversations.forEach(conv => { %>
+                            <% 
+                                const otherUser = (conv.participants || []).find(p => 
+                                    p && p._id && user && user._id && 
+                                    p._id.toString() !== user._id.toString()
+                                ); 
+                            %>
+                            <% if (otherUser) { %>
+                                <a href="/messages/t/<%= conv._id %>" class="conversation-item <%= (currentConv && currentConv._id && currentConv._id.toString() === conv._id.toString()) ? 'active' : '' %>">
+                                    <img src="<%= otherUser.profilePicture || '/images/default.png' %>" class="conv-avatar">
+                                    <div class="conv-info">
+                                        <div class="conv-name"><%= otherUser.firstName %> <%= otherUser.lastName %></div>
+                                        <div class="conv-last-msg"><%= conv.lastMessage || 'New discussion' %></div>
+                                    </div>
+                                </a>
+                            <% } %>
+                        <% }) %>
+                    <% } else { %>
+                        <p style="text-align:center; color:#999; margin-top:20px; font-size:14px;">No conversations</p>
+                    <% } %>
+                </div>
+            </aside>
+
+            <main class="chat-window">
+                <% if (currentConv) { %>
+                    <% 
+                        const otherUser = (currentConv.participants || []).find(p => 
+                            p && p._id && user && user._id && 
+                            p._id.toString() !== user._id.toString()
+                        ); 
+                    %>
+                    
+                    <% if (otherUser) { %>
+                        <div class="chat-header">
+                            <img src="<%= otherUser.profilePicture || '/images/default.png' %>" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                            <span style="font-weight: 600;"><%= otherUser.firstName %> <%= otherUser.lastName %></span>
+                        </div>
+
+                        <div class="chat-messages" id="chatMessages">
+                            <% if (messages && messages.length > 0) { %>
+                                <% messages.forEach(msg => { %>
+                                    <div class="message-bubble <%= (msg.sender && user && msg.sender.toString() === user._id.toString()) ? 'message-sent' : 'message-received' %>">
+                                        
+                                        <% if (msg.sharedPost) { %>
+                                            <div class="shared-post-content" style="margin-bottom: 8px;">
+                                                <small style="opacity: 0.8; font-style: italic;">
+                                                    <i class="fa-solid fa-share" style="margin-right: 5px;"></i>Shared a post
+                                                </small>
+                                                <div class="post-preview-card" style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; margin-top: 5px; border: 1px solid rgba(0,0,0,0.1);">
+                                                    <a href="/post/<%= msg.sharedPost %>" style="text-decoration: none; color: inherit;">
+                                                        <p style="margin: 0; font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                                            Click to view post content...
+                                                        </p>
+                                                        <div style="margin-top: 8px; font-weight: bold; font-size: 12px; text-transform: uppercase; color: <%= (msg.sender.toString() === user._id.toString()) ? '#fff' : '#0a66c2' %>;">
+                                                            View post <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        <% } %>
+
+                                        <% if (msg.content && msg.content !== "A partagé un post") { %>
+                                            <div class="text-content"><%= msg.content %></div>
+                                        <% } else if (!msg.sharedPost) { %>
+                                            <div class="text-content"><%= msg.content %></div>
+                                        <% } %>
+
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <p style="text-align:center; color:#999; margin-top:20px;">Say hello!</p>
+                            <% } %>
+                        </div>
+
+                        <div class="chat-input-area">
+                            <form action="/messages/send" method="POST" class="chat-form">
+                                <input type="hidden" name="conversationId" value="<%= currentConv._id %>">
+                                <input type="hidden" name="receiverId" value="<%= otherUser._id %>">
+                                <input type="text" name="content" class="chat-input" placeholder="Write a message..." required autocomplete="off">
+                                <button type="submit" class="btn-send">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </form>
+                        </div>
+                    <% } else { %>
+                        <div style="padding: 20px; text-align: center; color: #666;">
+                            <p>This conversation does not seem to have another valid participant.</p>
+                            <small>ID: <%= currentConv._id %></small>
+                        </div>
+                    <% } %>
+
+                <% } else { %>
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; text-align: center; padding: 20px;">
+                        <i class="fa-regular fa-comment-dots" style="font-size: 60px; color: #ccc; margin-bottom: 15px;"></i>
+                        <h3>Your Messages</h3>
+                        <p>Select a discussion or start a new one.</p>
+                    </div>
+                <% } %>
+            </main>
+        </div>
+    </div>
+
+    <div id="searchModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">New message</h3>
+                <span id="closeModal" style="cursor:pointer; font-size: 24px; color: #666;">&times;</span>
+            </div>
+            <input type="text" id="userSearchInput" placeholder="Search for a person..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; outline: none; border-color: #0a66c2;">
+            <div id="searchResults"></div>
+        </div>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chatMessages');
+        if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+
+        const modal = document.getElementById('searchModal');
+        const btn = document.getElementById('openSearchModal');
+        const span = document.getElementById('closeModal');
+        const searchInput = document.getElementById('userSearchInput');
+        const resultsDiv = document.getElementById('searchResults');
+
+        btn.onclick = () => { modal.style.display = "block"; searchInput.focus(); }
+        span.onclick = () => { modal.style.display = "none"; resultsDiv.innerHTML = ''; searchInput.value = ''; }
+        window.onclick = (e) => { if (e.target == modal) span.onclick(); }
+
+        searchInput.addEventListener('input', async (e) => {
+            const q = e.target.value;
+            if (q.length < 2) { resultsDiv.innerHTML = ''; return; }
+
+            try {
+                const response = await fetch(`/messages/search-users?q=${encodeURIComponent(q)}`);
+                const users = await response.json();
+
+                if (users.length === 0) {
+                    resultsDiv.innerHTML = '<p style="text-align:center; color:#999; padding:10px;">No user found</p>';
+                    return;
+                }
+
+                resultsDiv.innerHTML = users.map(u => `
+                    <a href="/messages/start/${u._id}" class="search-result-item">
+                        <img src="${u.profilePicture || '/images/default.png'}" style="width:40px; height:40px; border-radius:50%; margin-right:12px; object-fit:cover; border: 1px solid #eee;">
+                        <span style="font-weight:500;">${u.firstName} ${u.lastName}</span>
+                    </a>
+                `).join('');
+            } catch (err) {
+                console.error("Search error:", err);
+            }
+        });
+    </script>
+    <script src="/js/main.js"></script>
+
+</body>
+</html>

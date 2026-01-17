@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>">
+<head>
+    <meta charset="UTF-8">
+    <title><%= t('nav.language') %></title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<%- include('./partials/navbar', { user }) %>
+
+<div class="edit-container">
+    <div class="edit-card">
+        <h2><%= t('settings.language') %></h2>
+
+        <form action="/language" method="POST">
+            <label>
+                <input type="radio" name="lang" value="en" <%= lang === 'en' ? 'checked' : '' %>>
+                English
+            </label><br>
+
+            <label>
+                <input type="radio" name="lang" value="fr" <%= lang === 'fr' ? 'checked' : '' %>>
+                Français
+            </label><br>
+
+            <label>
+                <input type="radio" name="lang" value="ar" <%= lang === 'ar' ? 'checked' : '' %>>
+                العربية
+            </label><br><br>
+
+            <button type="submit" class="btn-primary">
+                Save
+            </button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

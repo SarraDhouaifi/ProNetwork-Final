@@ -1,0 +1,160 @@
+<% const currentPath = typeof req !== 'undefined' ? req.path : ''; %>
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-left">
+            <a href="/feed" class="logo" onclick="if (window.location.pathname === '/feed') window.location.reload();">
+                PN <% if (user && user.role === 'company') { %><span style="font-size: 12px; color: #378fe9;">Business</span><% } %>
+            </a>
+            <form action="/search" method="GET" class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" name="q" placeholder="Search..." autocomplete="off">
+                <button type="submit" style="display:none;"></button>
+            </form>
+        </div>
+
+        <div class="nav-right">
+            <a href="/feed" class="nav-item <%= currentPath === '/feed' ? 'active' : '' %>">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+
+            <a href="/network" class="nav-item <%= currentPath === '/network' ? 'active' : '' %>">
+                <i class="fa-solid fa-user-group"></i>
+                <span>Network</span>
+            </a>
+
+            <a href="<%= (user && user.role === 'company') ? '/jobs/manage' : '/jobs' %>" class="nav-item <%= currentPath.startsWith('/jobs') ? 'active' : '' %>">
+                <i class="fa-solid fa-briefcase"></i>
+                <span>Jobs</span>
+            </a>
+
+            <a href="/messages" class="nav-item <%= currentPath === '/messages' ? 'active' : '' %>">
+                <i class="fa-solid fa-comment-dots"></i>
+                <span>Messaging</span>
+            </a>
+
+            <a href="/notifications" class="nav-item position-relative <%= currentPath === '/notifications' ? 'active' : '' %>">
+                <div style="position:relative;">
+                    <i class="fa-solid fa-bell"></i>
+                    <% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %>
+                        <span id="notif-badge" class="badge-count" data-count="<%= unreadCount %>" data-user-id="<%= user ? user._id : '' %>">
+                            <%= unreadCount > 99 ? '99+' : unreadCount %>
+                        </span>
+                    <% } %>
+                </div>
+                <span>Notifications</span>
+            </a>
+
+            <% if (typeof user !== 'undefined' && user) { %>
+                <div class="nav-item dropdown-container" id="meDropdownTrigger">
+                    <div class="nav-link-content" style="cursor: pointer;">
+                        <div class="avatar-sm">
+                            <% if (user.profilePicture) { %>
+                                <img src="<%= user.profilePicture %>" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                            <% } else { %>
+                                <div style="width:100%;height:100%;background:#ccc;border-radius:50%; display:flex;align-items:center;justify-content:center; color:#fff;font-size:12px;">
+                                    <% if (user.role === 'company') { %>
+                                        <i class="fa-solid fa-building"></i>
+                                    <% } else { %>
+                                        <%= user.firstName.charAt(0) %><%= (user.lastName || '').charAt(0) %>
+                                    <% } %>
+                                </div>
+                            <% } %>
+                        </div>
+                        <span>Me <i class="fa-solid fa-caret-down"></i></span>
+                    </div>
+
+                    <div class="dropdown-menu" id="meDropdown">
+                        <div class="dropdown-header">
+                            <div class="avatar-md">
+                                <% if (user.profilePicture) { %>
+                                    <img src="<%= user.profilePicture %>" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                                <% } else { %>
+                                    <div style="width:100%;height:100%;background:#ccc;border-radius:50%; display:flex;align-items:center;justify-content:center; color:#fff;font-size:20px;">
+                                        <i class="fa-solid <%= user.role === 'company' ? 'fa-building' : 'fa-user' %>"></i>
+                                    </div>
+                                <% } %>
+                            </div>
+                            <div class="user-info">
+                                <strong><%= user.companyName || (user.firstName + ' ' + (user.lastName || '')) %></strong>
+                                <p style="font-size: 12px; color: #666;"><%= user.headline || (user.role === 'company' ? 'Company Account' : 'Member') %></p>
+                            </div>
+                        </div>
+
+                        <a href="/profile" class="view-profile-btn">View Profile</a>
+                        
+                        <hr class="dropdown-divider">
+
+                        <% if (user.role === 'company') { %>
+                            <div class="dropdown-section">
+                                <h4>Manage</h4>
+                                <a href="/jobs/manage"><i class="fa-solid fa-list-check"></i> Manage Job Offers</a>
+                                <a href="/jobs/create"><i class="fa-solid fa-plus"></i> Post a Job</a>
+                            </div>
+                            <hr class="dropdown-divider">
+                        <% } %>
+
+                        <div class="dropdown-section">
+                            <h4>Account</h4>
+                            <a href="/settings">Settings & Privacy</a>
+                            <a href="/help">Help</a>
+                            <a href="/language">Language</a>
+                        </div>
+                        
+                        <hr class="dropdown-divider">
+                        <a href="/logout" class="sign-out-link">Sign Out</a>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .navbar {
+        height: 60px; /* J'ai ajouté la hauteur ici (ajustez la valeur selon vos besoins) */
+    }
+
+    /* Badge de notification style LinkedIn */
+    .badge-count {
+        position: absolute;
+        top: -4px;
+        right: -6px;
+        background-color: #cc1016;
+        color: white;
+        border-radius: 50%;
+        min-width: 16px;
+        height: 16px;
+        font-size: 10px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+        padding: 2px;
+    }
+
+    .nav-item.active {
+        border-bottom: 2px solid #000;
+        color: #000;
+    }
+
+    .nav-item.active i, .nav-item.active span {
+        color: #000;
+    }
+    .dropdown-container {
+    position: relative; /* Indispensable pour que le menu se place par rapport à l'icône "Me" */
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%; /* Il s'affiche juste en dessous de la navbar de 80px */
+    right: 0;
+    z-index: 2000; /* Doit être plus élevé que la navbar */
+}
+
+.dropdown-container:hover .dropdown-menu {
+    display: block; /* L'affichage au survol */
+}
+</style>

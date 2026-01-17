@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications | ProNetwork</title>
+    
+    <link rel="stylesheet" href="/css/feed.css">
+    <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        .notification-item.unread {
+            background-color: #f0f7ff;
+            border-left: 4px solid #0a66c2;
+        }
+        .notif-author-name {
+            font-weight: 700;
+            color: #333;
+        }
+        .btn-reply {
+            color: #0a66c2;
+            border: 1px solid #0a66c2;
+            border-radius: 16px;
+            padding: 5px 15px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            transition: 0.3s;
+            display: inline-block;
+        }
+        .btn-reply:hover {
+            background: #eef3f8;
+            color: #004182;
+        }
+        .empty-state {
+            padding: 50px 20px;
+            text-align: center;
+            color: #666;
+        }
+        .avatar-notif {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .default-avatar-notif {
+            width: 56px;
+            height: 56px;
+            background: #0a66c2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('./partials/navbar', { user: user }) %> 
+    
+    <div class="profile-container" style="display: block; max-width: 600px; margin: 20px auto;">
+        <div class="card">
+            <div class="section-header" style="padding: 15px; border-bottom: 1px solid #eee; font-weight: bold; font-size: 18px; display: flex; justify-content: space-between; align-items: center;">
+                <span>Notifications</span>
+                <button onclick="markAllAsRead()" style="background:none; border:none; color:#0a66c2; font-size:13px; cursor:pointer; font-weight:600;">Mark all as read</button>
+            </div>
+            
+            <div class="section-body" style="padding: 0;">
+                <% if (notifications && notifications.length > 0) { %>
+                    <% notifications.forEach(notif => { %>
+                        <% if (notif.sender) { %>
+                            <div class="notification-item <%= !notif.isRead ? 'unread' : '' %>" 
+                                 id="notif-<%= notif._id %>"
+                                 style="display:flex; gap:15px; padding:15px; border-bottom:1px solid #eee; align-items:center;">
+
+                                <a href="/user/<%= notif.sender._id %>" style="text-decoration:none;">
+                                    <% if (notif.sender.profilePicture) { %>
+                                        <img src="<%= notif.sender.profilePicture %>" class="avatar-notif" alt="Sender">
+                                    <% } else { %>
+                                        <div class="default-avatar-notif">
+                                            <%= notif.sender.firstName.charAt(0) %>
+                                        </div>
+                                    <% } %>
+                                </a>
+
+                                <div style="flex:1;">
+                                    <div style="font-size:14px; line-height: 1.4; color: #444;">
+                                        <span class="notif-author-name"><%= notif.sender.firstName %> <%= notif.sender.lastName %></span>
+                                        
+                                        <% if (notif.type === 'new_message') { %>
+                                            sent you a message.
+                                        <% } else if (notif.type === 'connection_request') { %>
+                                            wants to connect.
+                                        <% } else if (notif.type === 'connection_accepted') { %>
+                                            accepted your connection request.
+                                        <% } else if (notif.type === 'like') { %>
+                                            liked your post.
+                                        <% } else if (notif.type === 'comment') { %>
+                                            commented on your post.
+                                        <% } else if (notif.type === 'connection_removed') { %>
+                                            removed the connection.
+                                        <% } %>
+                                    </div>
+                                    <div style="font-size:12px; color:#666; margin-top: 4px;">
+                                        <%= notif.sender.headline || 'Professional' %> • 
+                                        <%= new Date(notif.createdAt).toLocaleDateString() %>
+                                    </div>
+                                </div>
+
+                                <div class="notif-actions">
+                                    <% if (notif.type === 'new_message') { %>
+                                        <a href="/messages" class="btn-reply">View Message</a>
+                                    <% } else if (notif.type === 'connection_request') { %>
+                                        <div style="display:flex; gap:8px;">
+                                            <button onclick="acceptConnectionRequest('<%= notif.sender._id %>', '<%= notif._id %>')" class="btn-pill btn-outline" style="padding: 4px 12px; cursor: pointer;">
+                                                Accept
+                                            </button>
+                                            <button onclick="ignoreConnectionRequest('<%= notif.sender._id %>', '<%= notif._id %>')" class="btn-pill btn-outline" style="padding: 4px 12px; cursor: pointer; color: #666; border-color: #ccc;">
+                                                Ignore
+                                            </button>
+                                        </div>
+                                    <% } else if (notif.type === 'like' || notif.type === 'comment') { %>
+                                        <a href="/post/<%= notif.relatedPost %>" class="btn-reply">View Post</a>
+                                    <% } %>
+                                </div>
+                            </div>
+                        <% } %>
+                    <% }) %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fa-regular fa-bell-slash" style="font-size: 48px; margin-bottom: 15px; color: #ccc;"></i>
+                        <p style="font-weight: 600; color: #333;">No notifications yet</p>
+                        <p style="font-size: 14px;">When you get updates, they'll show up here.</p>
+                        <a href="/feed" style="color: #0a66c2; text-decoration: none; font-size: 14px; display: inline-block; margin-top: 10px;">Return to feed</a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/notifications.js"></script>
+</body>
+</html>
