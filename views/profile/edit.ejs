@@ -31,16 +31,18 @@
                             <label>Profile Picture</label>
                             <input type="file" name="profilePicture" accept="image/*">
                         </div>
+                        <% if (user.role !== 'company') { %>
                         <div class="form-group" style="flex: 1;">
                             <label>Resume / CV (PDF)</label>
                             <input type="file" name="resume" accept="application/pdf">
                         </div>
+                        <% } %>
                     </div>
                     <div class="form-group">
-                        <label>Headline</label>
+                        <label><%= user.role === 'company' ? 'Company Tagline' : 'Headline' %></label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-id-card"></i>
-                            <input type="text" name="headline" value="<%= user.headline %>" placeholder="e.g. Senior Product Designer">
+                            <input type="text" name="headline" value="<%= user.headline %>" placeholder="e.g. Innovating the future of tech">
                         </div>
                     </div>
                     <div class="form-group">
@@ -51,8 +53,8 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>About Me</label>
-                        <textarea name="about" rows="4" placeholder="Tell us about yourself..."><%= user.about %></textarea>
+                        <label><%= user.role === 'company' ? 'About the Company' : 'About Me' %></label>
+                        <textarea name="about" rows="4" placeholder="Tell us more..."><%= user.about %></textarea>
                     </div>
                 </div>
 
@@ -72,6 +74,7 @@
                             <input type="text" name="linkedin" value="<%= user.contactInfo ? user.contactInfo.linkedin : '' %>" placeholder="https://linkedin.com/in/...">
                         </div>
                     </div>
+                    <% if (user.role !== 'company') { %>
                     <div class="form-group">
                         <label>GitHub Handle</label>
                         <div class="input-wrapper">
@@ -79,117 +82,120 @@
                             <input type="text" name="github" value="<%= user.contactInfo ? user.contactInfo.github : '' %>" placeholder="@username">
                         </div>
                     </div>
+                    <% } %>
                 </div>
 
-                <div class="form-section">
-                    <h3>Skills</h3>
-                    <p style="font-size: 13px; color: #6B7280; margin-bottom: 10px;">Separate skills with commas</p>
-                    <div class="form-group">
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-star"></i>
-                            <input type="text" name="skills" value="<%= user.skills ? user.skills.join(', ') : '' %>" placeholder="List your skills...">
+                <% if (user.role !== 'company') { %>
+                    <div class="form-section">
+                        <h3>Skills</h3>
+                        <p style="font-size: 13px; color: #6B7280; margin-bottom: 10px;">Separate skills with commas</p>
+                        <div class="form-group">
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-star"></i>
+                                <input type="text" name="skills" value="<%= user.skills ? user.skills.join(', ') : '' %>" placeholder="List your skills...">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-section">
-                    <h3>Experience</h3>
-                    <div id="experience-container">
-                        <% if (user.experiences && user.experiences.length > 0) { %>
-                            <% user.experiences.forEach((exp, index) => { %>
-                                <div class="experience-item">
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                                        <h4 style="color: #4b5563; font-size: 14px; margin: 0;">Position #<%= index + 1 %></h4>
-                                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="btn-remove">
-                                            <i class="fa-solid fa-trash"></i> Remove
-                                        </button>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group" style="flex: 1;">
-                                            <label>Title</label>
-                                            <div class="input-wrapper"><i class="fa-solid fa-briefcase"></i><input type="text" name="titles[]" value="<%= exp.title %>"></div>
+                    <div class="form-section">
+                        <h3>Experience</h3>
+                        <div id="experience-container">
+                            <% if (user.experiences && user.experiences.length > 0) { %>
+                                <% user.experiences.forEach((exp, index) => { %>
+                                    <div class="experience-item">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                            <h4 style="color: #4b5563; font-size: 14px; margin: 0;">Position #<%= index + 1 %></h4>
+                                            <button type="button" onclick="this.parentElement.parentElement.remove()" class="btn-remove">
+                                                <i class="fa-solid fa-trash"></i> Remove
+                                            </button>
                                         </div>
-                                        <div class="form-group" style="flex: 1;">
-                                            <label>Company</label>
-                                            <div class="input-wrapper"><i class="fa-solid fa-building"></i><input type="text" name="companies[]" value="<%= exp.company %>"></div>
+                                        <div class="form-row">
+                                            <div class="form-group" style="flex: 1;">
+                                                <label>Title</label>
+                                                <div class="input-wrapper"><i class="fa-solid fa-briefcase"></i><input type="text" name="titles[]" value="<%= exp.title %>"></div>
+                                            </div>
+                                            <div class="form-group" style="flex: 1;">
+                                                <label>Company</label>
+                                                <div class="input-wrapper"><i class="fa-solid fa-building"></i><input type="text" name="companies[]" value="<%= exp.company %>"></div>
+                                            </div>
                                         </div>
+                                        <div class="form-group">
+                                            <label>Duration</label>
+                                            <div class="input-wrapper"><i class="fa-regular fa-calendar"></i><input type="text" name="durations[]" value="<%= exp.duration %>"></div>
+                                        </div>
+                                        <div class="form-group"><label>Description</label><textarea name="descriptions[]" rows="2"><%= exp.description %></textarea></div>
                                     </div>
-                                    <div class="form-group">
-                                        <label>Duration</label>
-                                        <div class="input-wrapper"><i class="fa-regular fa-calendar"></i><input type="text" name="durations[]" value="<%= exp.duration %>"></div>
-                                    </div>
-                                    <div class="form-group"><label>Description</label><textarea name="descriptions[]" rows="2"><%= exp.description %></textarea></div>
-                                </div>
-                            <% }) %>
-                        <% } %>
+                                <% }) %>
+                            <% } %>
+                        </div>
+                        <button type="button" id="add-experience-btn" class="btn-social" style="width: 100%; justify-content: center; margin-top: 10px;"><i class="fa-solid fa-plus"></i> Add Position</button>
                     </div>
-                    <button type="button" id="add-experience-btn" class="btn-social" style="width: 100%; justify-content: center; margin-top: 10px;"><i class="fa-solid fa-plus"></i> Add Position</button>
-                </div>
 
-                <div class="form-section">
-                    <h3>Education</h3>
-                    <div id="education-container">
-                        <% if (user.education && user.education.length > 0) { %>
-                            <% user.education.forEach((edu, index) => { %>
-                                <div class="education-item">
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                                        <h4 style="color: #0f766e; font-size: 14px; margin: 0;">Education #<%= index + 1 %></h4>
-                                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="btn-remove">
-                                            <i class="fa-solid fa-trash"></i> Remove
-                                        </button>
+                    <div class="form-section">
+                        <h3>Education</h3>
+                        <div id="education-container">
+                            <% if (user.education && user.education.length > 0) { %>
+                                <% user.education.forEach((edu, index) => { %>
+                                    <div class="education-item">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                            <h4 style="color: #0f766e; font-size: 14px; margin: 0;">Education #<%= index + 1 %></h4>
+                                            <button type="button" onclick="this.parentElement.parentElement.remove()" class="btn-remove">
+                                                <i class="fa-solid fa-trash"></i> Remove
+                                            </button>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group" style="flex: 1;">
+                                                <label>Degree</label>
+                                                <div class="input-wrapper"><i class="fa-solid fa-graduation-cap"></i><input type="text" name="edu_degree[]" value="<%= edu.degree %>"></div>
+                                            </div>
+                                            <div class="form-group" style="flex: 1;">
+                                                <label>University</label>
+                                                <div class="input-wrapper"><i class="fa-solid fa-school"></i><input type="text" name="edu_university[]" value="<%= edu.university %>"></div>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group" style="flex: 1;">
+                                                <label>Year</label>
+                                                <div class="input-wrapper"><i class="fa-regular fa-calendar"></i><input type="text" name="edu_year[]" value="<%= edu.year %>"></div>
+                                            </div>
+                                            <div class="form-group" style="flex: 1;">
+                                                <label>Location</label>
+                                                <div class="input-wrapper"><i class="fa-solid fa-location-dot"></i><input type="text" name="edu_location[]" value="<%= edu.location %>"></div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="form-row">
-                                        <div class="form-group" style="flex: 1;">
-                                            <label>Degree</label>
-                                            <div class="input-wrapper"><i class="fa-solid fa-graduation-cap"></i><input type="text" name="edu_degree[]" value="<%= edu.degree %>"></div>
-                                        </div>
-                                        <div class="form-group" style="flex: 1;">
-                                            <label>University</label>
-                                            <div class="input-wrapper"><i class="fa-solid fa-school"></i><input type="text" name="edu_university[]" value="<%= edu.university %>"></div>
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group" style="flex: 1;">
-                                            <label>Year</label>
-                                            <div class="input-wrapper"><i class="fa-regular fa-calendar"></i><input type="text" name="edu_year[]" value="<%= edu.year %>"></div>
-                                        </div>
-                                        <div class="form-group" style="flex: 1;">
-                                            <label>Location</label>
-                                            <div class="input-wrapper"><i class="fa-solid fa-location-dot"></i><input type="text" name="edu_location[]" value="<%= edu.location %>"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            <% }) %>
-                        <% } %>
+                                <% }) %>
+                            <% } %>
+                        </div>
+                        <button type="button" id="add-education-btn" class="btn-social" style="width: 100%; justify-content: center; margin-top: 10px;"><i class="fa-solid fa-plus"></i> Add Education</button>
                     </div>
-                    <button type="button" id="add-education-btn" class="btn-social" style="width: 100%; justify-content: center; margin-top: 10px;"><i class="fa-solid fa-plus"></i> Add Education</button>
-                </div>
 
-                <div class="form-section">
-                    <h3>Languages</h3>
-                    <div id="language-container">
-                        <% if (user.languages && user.languages.length > 0) { %>
-                            <% user.languages.forEach((lang, index) => { %>
-                                <div class="language-item">
-                                    <div style="display: flex; gap: 10px; align-items: center;">
-                                        <div class="input-wrapper" style="flex: 1;">
-                                            <i class="fa-solid fa-language"></i>
-                                            <input type="text" name="lang_name[]" value="<%= lang.name %>" placeholder="Language">
+                    <div class="form-section">
+                        <h3>Languages</h3>
+                        <div id="language-container">
+                            <% if (user.languages && user.languages.length > 0) { %>
+                                <% user.languages.forEach((lang, index) => { %>
+                                    <div class="language-item">
+                                        <div style="display: flex; gap: 10px; align-items: center;">
+                                            <div class="input-wrapper" style="flex: 1;">
+                                                <i class="fa-solid fa-language"></i>
+                                                <input type="text" name="lang_name[]" value="<%= lang.name %>" placeholder="Language">
+                                            </div>
+                                            <div class="input-wrapper" style="flex: 1;">
+                                                <i class="fa-solid fa-layer-group"></i>
+                                                <input type="text" name="lang_level[]" value="<%= lang.level %>" placeholder="Level">
+                                            </div>
+                                            <button type="button" onclick="this.parentElement.parentElement.remove()" class="btn-remove">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
                                         </div>
-                                        <div class="input-wrapper" style="flex: 1;">
-                                            <i class="fa-solid fa-layer-group"></i>
-                                            <input type="text" name="lang_level[]" value="<%= lang.level %>" placeholder="Level">
-                                        </div>
-                                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="btn-remove">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
                                     </div>
-                                </div>
-                            <% }) %>
-                        <% } %>
+                                <% }) %>
+                            <% } %>
+                        </div>
+                        <button type="button" id="add-language-btn" class="btn-social" style="width: 100%; justify-content: center; margin-top: 10px;"><i class="fa-solid fa-plus"></i> Add Language</button>
                     </div>
-                    <button type="button" id="add-language-btn" class="btn-social" style="width: 100%; justify-content: center; margin-top: 10px;"><i class="fa-solid fa-plus"></i> Add Language</button>
-                </div>
+                <% } %>
 
                 <div class="form-actions">
                     <a href="/profile" class="btn-social btn-cancel">Cancel</a>

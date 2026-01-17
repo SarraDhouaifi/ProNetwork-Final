@@ -3,89 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProNetwork</title>
+    <title>Détails du Post | ProNetwork</title>
     <link rel="stylesheet" href="/assets/css/style.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
-<%- include('partials/navbar') %>
+<body style="background-color: #f3f2ef;"> <%- include('partials/navbar') %>
 
 <div class="container main-content">
     <div class="feed-container" style="max-width: 700px; margin: 20px auto;">
         
         <div style="margin-bottom: 15px;">
-            <a href="/feed" class="btn btn-secondary">&larr; Retour au fil d'actualité</a>
+            <a href="/feed" class="btn btn-secondary" style="text-decoration: none; color: #666; font-weight: 600;">
+                <i class="fas fa-arrow-left"></i> Retour au fil d'actualité
+            </a>
         </div>
 
-        <div class="post-card">
-            <div class="post-header">
-                <img src="<%= post.author.profilePicture || '/assets/images/default-user.png' %>" alt="Profile" class="post-avatar">
+        <div class="post-card" style="background: white; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); padding: 20px; border: 1px solid #e0e0e0;">
+            
+            <div class="post-header" style="display: flex; align-items: center; margin-bottom: 15px;">
+                <img src="<%= post.author.profilePicture || 'https://cdn-icons-png.flaticon.com/512/149/149071.png' %>" 
+                     alt="Profile" 
+                     style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 1px solid #eee;">
+                
                 <div class="post-info">
-                    <a href="/user/<%= post.author._id %>" class="author-name">
+                    <a href="/user/<%= post.author._id %>" class="author-name" style="font-weight: 700; color: #333; text-decoration: none; font-size: 1.1em;">
                         <%= post.author.firstName %> <%= post.author.lastName %>
                     </a>
-                    <span class="author-headline"><%= post.author.headline || 'Membre' %></span>
-                    <span class="post-date"><%= new Date(post.createdAt).toLocaleDateString() %></span>
+                    <span class="author-headline" style="font-size: 0.9em; color: #666; display: block;">
+                        <%= post.author.headline || 'Membre ProNetwork' %>
+                    </span>
+                    <span class="post-date" style="font-size: 0.8em; color: #888;">
+                        <%= new Date(post.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                    </span>
                 </div>
             </div>
 
-            <div class="post-content">
-                <p><%= post.text %></p>
+            <div class="post-content" style="margin-bottom: 20px; line-height: 1.5;">
+                <p style="font-size: 1.05em; color: #333; white-space: pre-wrap;"><%= post.content || post.text || post.sharedText %></p>
+                
                 <% if (post.image) { %>
-                    <img src="<%= post.image %>" alt="Post Image" class="post-image-content">
+                    <div style="margin-top: 15px; border-radius: 8px; overflow: hidden; border: 1px solid #f0f0f0;">
+                        <img src="<%= post.image %>" alt="Post Image" style="width: 100%; display: block;">
+                    </div>
                 <% } %>
             </div>
 
-            <div class="post-stats">
-                <span><%= post.likes.length %> Likes</span>
-                <span><%= post.comments.length %> Comments</span>
+            <div class="post-stats" style="padding: 10px 0; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; font-size: 0.85em; color: #777;">
+                <span id="likes-count"><i class="fas fa-thumbs-up" style="color: #0a66c2;"></i> <%= post.likes.length %> Likes</span>
+                <span><%= post.comments.length %> Commentaires</span>
             </div>
 
-            <div class="post-actions">
-                <button class="action-btn like-btn" data-post-id="<%= post._id %>">
-                    <i class="fas fa-thumbs-up"></i> Like
+            <div class="post-actions" style="padding: 5px 0; border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: center;">
+                <button class="action-btn like-btn" 
+                        data-post-id="<%= post._id %>" 
+                        style="background: none; border: none; cursor: pointer; color: <%= post.likes.includes(user._id) ? '#0a66c2' : '#666' %>; font-weight: 600; padding: 10px; display: flex; align-items: center; gap: 8px; font-size: 1em;">
+                    <i class="fas fa-thumbs-up"></i> J'aime
                 </button>
             </div>
 
-            <div class="comments-section">
-                <div class="existing-comments">
-                    <% post.comments.forEach(comment => { %>
-                        <div class="comment-item" style="border-top: 1px solid #eee; padding: 10px 0;">
-                            <strong>
-                                <%= comment.userName || (comment.user ? comment.user.firstName : 'Utilisateur') %>
-                            </strong>
-                            <p style="margin: 0;"><%= comment.text %></p>
-                        </div>
-                    <% }) %>
-                </div>
+            <div class="comments-section" style="margin-top: 20px;">
+                <h4 style="font-size: 1em; color: #333; margin-bottom: 15px;">Commentaires</h4>
                 
-                <form class="comment-form" action="/post/<%= post._id %>/comment" method="POST" style="margin-top: 15px; display:flex; gap:10px;">
-                    <input type="text" name="commentText" placeholder="Écrire un commentaire..." class="form-control" required>
-                    <button type="submit" class="btn btn-primary">Envoyer</button>
+                <form class="comment-form" action="/post/<%= post._id %>/comment" method="POST" style="margin-bottom: 25px; display: flex; gap: 10px; align-items: center;">
+                    <img src="<%= user.profilePicture || 'https://cdn-icons-png.flaticon.com/512/149/149071.png' %>" style="width: 35px; height: 35px; border-radius: 50%;">
+                    <input type="text" name="commentText" placeholder="Ajouter un commentaire..." 
+                           style="flex-grow: 1; padding: 12px 15px; border: 1px solid #ccc; border-radius: 25px; outline: none; font-size: 0.9em;" required>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 20px; padding: 8px 18px; font-weight: 600; border: none; background-color: #0a66c2; color: white; cursor: pointer;">Publier</button>
                 </form>
+
+                <div class="existing-comments">
+                    <% if (post.comments.length > 0) { %>
+                        <% post.comments.forEach(comment => { %>
+                            <div class="comment-item" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                <img src="<%= (comment.user && comment.user.profilePicture) ? comment.user.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png' %>" 
+                                     style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; margin-top: 5px;">
+                                <div style="flex: 1;">
+                                    <div style="background: #f2f2f2; padding: 10px 15px; border-radius: 0 12px 12px 12px;">
+                                        <strong style="font-size: 0.9em; color: #333; display: block;">
+                                            <%= (comment.user) ? (comment.user.firstName + ' ' + comment.user.lastName) : 'Utilisateur' %>
+                                        </strong>
+                                        <p style="margin: 4px 0 0 0; font-size: 0.95em; color: #444; line-height: 1.4;"><%= comment.text %></p>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <p style="text-align: center; color: #888; font-style: italic; font-size: 0.9em;">Aucun commentaire pour le moment.</p>
+                    <% } %>
+                </div>
             </div>
         </div>
-
     </div>
 </div>
 
-<footer style="text-align: center; padding: 20px; margin-top: 50px; color: #777;">
-        <p>&copy; 2024 ProNetwork. Tous droits réservés.</p>
-    </footer>
-</body>
-</html>
+<footer style="text-align: center; padding: 30px; color: #666; font-size: 0.9em;">
+    <p>&copy; 2026 ProNetwork. Tous droits réservés.</p>
+</footer>
 
 <script>
-    document.querySelectorAll('.like-btn').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const postId = this.dataset.postId;
-            try {
-                const res = await fetch(`/post/${postId}/like`, { method: 'POST' });
-                const data = await res.json();
-                if (data.success) {
-                    location.reload(); // Recharger pour voir le like mis à jour
+    // Gestion du Like en AJAX
+    document.querySelector('.like-btn').addEventListener('click', async function() {
+        const postId = this.dataset.postId;
+        const btn = this;
+        const likesText = document.getElementById('likes-count');
+
+        try {
+            const res = await fetch(`/post/${postId}/like`, { method: 'POST' });
+            const data = await res.json();
+            
+            if (data.success) {
+                if (data.action === 'liked') {
+                    btn.style.color = '#0a66c2';
+                } else {
+                    btn.style.color = '#666';
                 }
-            } catch (err) { console.error(err); }
-        });
+                likesText.innerHTML = `<i class="fas fa-thumbs-up" style="color: #0a66c2;"></i> ${data.likesCount} Likes`;
+            }
+        } catch (err) { 
+            console.error("Erreur lors du Like:", err); 
+        }
     });
 </script>
+
+</body>
+</html>

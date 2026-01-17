@@ -71,13 +71,14 @@ router.post('/:postId/like', validateIds, async (req, res) => {
     }
 });
 
+// MODIFICATION ICI : Redirection après le commentaire pour éviter le JSON brut
 router.post('/:postId/comment', validateIds, uploadFields, async (req, res) => {
     const currentUser = req.user || req.session.user;
-    if (!currentUser) return res.status(401).json({ success: false });
+    if (!currentUser) return res.status(401).send("Non autorisé");
 
     try {
         const post = await Post.findById(req.params.postId);
-        if (!post) return res.json({ success: false });
+        if (!post) return res.status(404).send("Post non trouvé");
 
         const userId = (currentUser._id || currentUser.id).toString();
         const comment = {
@@ -99,16 +100,12 @@ router.post('/:postId/comment', validateIds, uploadFields, async (req, res) => {
             });
         }
 
-        res.json({
-            success: true,
-            text: comment.text,
-            image: comment.image,
-            video: comment.video,
-            commentsCount: post.comments.length,
-            author: { firstName: currentUser.firstName, lastName: currentUser.lastName }
-        });
+        // On redirige vers la page de détails du post au lieu de renvoyer du JSON
+        res.redirect(`/post/${req.params.postId}`);
+
     } catch (err) {
-        res.status(500).json({ success: false });
+        console.error(err);
+        res.status(500).send("Erreur lors de l'ajout du commentaire");
     }
 });
 
@@ -193,18 +190,13 @@ router.post('/:postId/comment/:commentId/reply/:replyId/like', validateIds, asyn
     }
 });
 
-// Partager un post via la messagerie privée
-// Remove the extra '/post' from the path
-// --- Inside postRoutes.js ---
-
 router.post('/send-to-user', async (req, res) => {
     const user = req.user || req.session.user;
     if (!user) return res.status(401).json({ success: false });
 
-    const { postId, receiverId } = req.body; // <--- This must match the key sent from main.js
+    const { postId, receiverId } = req.body;
     const senderId = (user._id || user.id).toString();
 
-    // 1. Validation check to prevent crashes
     if (!receiverId) {
         return res.status(400).json({ success: false, message: "Receiver ID is missing" });
     }
@@ -222,19 +214,17 @@ router.post('/send-to-user', async (req, res) => {
             await conversation.save();
         }
 
-        // 2. CREATE MESSAGE (Fixed receiver assignment)
         const newMessage = new Message({
             conversationId: conversation._id,
             sender: senderId,
-            receiver: receiverId, // <--- MAKE SURE THIS LINE EXISTS AND USES receiverId
+            receiver: receiverId,
             content: "A partagé un post avec vous",
             sharedPost: postId,
             isRead: false
         });
 
-        await newMessage.save(); // This is where it was failing because receiver was undefined
+        await newMessage.save();
 
-        // 3. Update conversation timestamp
         await Conversation.findByIdAndUpdate(conversation._id, {
             lastMessage: "Post partagé",
             updatedAt: Date.now()
@@ -243,12 +233,87 @@ router.post('/send-to-user', async (req, res) => {
         res.json({ success: true, conversationId: conversation._id });
 
     } catch (err) {
-        console.error("Detailed Error:", err); // Keep this for debugging
+        console.error("Detailed Error:", err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
 
-// DELETE, EDIT, etc. (Remain similar but should use validateIds)
-router.delete('/:postId', validateIds, async (req, res) => { /* logic */ });
+// GET - Display a single post detail page
+router.get('/:postId', validateIds, async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.postId)
+            .populate('author')
+            .populate({
+                path: 'comments.user',
+                select: 'firstName lastName profilePicture'
+            })
+            .populate({
+                path: 'sharedPost',
+                populate: { path: 'author' }
+            });
+
+        if (!post) {
+            return res.status(404).send("Post not found");
+        }
+
+        res.render('post-detail', { 
+            post, 
+            user: req.user || req.session.user 
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server Error");
+    }
+});
+
+// 📝 ÉDITER UN POST (Route PUT)
+router.put('/:postId', validateIds, async (req, res) => {
+    const user = req.user || req.session.user;
+    if (!user) return res.status(401).json({ success: false, message: "Non authentifié" });
+
+    try {
+        const post = await Post.findById(req.params.postId);
+        if (!post) return res.status(404).json({ success: false, message: "Post non trouvé" });
+
+        // Vérification que l'utilisateur est bien l'auteur
+        const userId = (user._id || user.id).toString();
+        if (post.author.toString() !== userId) {
+            return res.status(403).json({ success: false, message: "Action non autorisée" });
+        }
+
+        // Mise à jour du texte
+        post.text = req.body.text;
+        post.updatedAt = Date.now();
+        await post.save();
+
+        res.json({ success: true, text: post.text });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Erreur serveur" });
+    }
+});
+
+// 🗑️ SUPPRIMER UN POST (Route DELETE)
+router.delete('/:postId', validateIds, async (req, res) => {
+    const user = req.user || req.session.user;
+    if (!user) return res.status(401).json({ success: false, message: "Non authentifié" });
+
+    try {
+        const post = await Post.findById(req.params.postId);
+        if (!post) return res.status(404).json({ success: false, message: "Post non trouvé" });
+
+        // Vérification de l'auteur
+        const userId = (user._id || user.id).toString();
+        if (post.author.toString() !== userId) {
+            return res.status(403).json({ success: false, message: "Action non autorisée" });
+        }
+
+        await Post.findByIdAndDelete(req.params.postId);
+        res.json({ success: true, message: "Post supprimé avec succès" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Erreur serveur" });
+    }
+});
 
 module.exports = router;
